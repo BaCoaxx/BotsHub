@@ -16,15 +16,16 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID_Items.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
+#include '../../lib/GWA2_ID_Quests.au3'
 #include '../../lib/GWA2_ID.au3'
-#include '../../lib/Utils.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
 #include '../../lib/Utils-Storage.au3'
+#include '../../lib/Utils.au3'
 
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
 Global Const $LDOA_INFORMATIONS = 'This bot:' & @CRLF _
@@ -52,11 +53,10 @@ Global Const $LOW_HEALTH_CHECK_INTERVAL = 100
 
 Global $ldoa_farm_setup = False
 
-Global $ldoa_fight_options = CloneDictMap($default_move_aggro_kill_options)
-$ldoa_fight_options.Item('openChests')			= False
-$ldoa_fight_options.Item('callTarget')			= False
-$ldoa_fight_options.Item('priorityMobs')		= True
-$ldoa_fight_options.Item('lootInFights')		= False
+Global $ldoa_fight_options = CloneMap($default_move_aggro_kill_options)
+$ldoa_fight_options['openChests']	= False
+$ldoa_fight_options['callTarget']	= False
+$ldoa_fight_options['priorityMobs']	= True
 
 ;~ Main method to get LDOA title
 Func LDOATitleFarm()
@@ -156,19 +156,19 @@ Func InitialSetupLDOA()
 	; So we send the dialog here manually
 	Info('Finishing War Preparations')
 	GoToNPC($questNPC)
-	Sleep(1000 + GetPing())
+	PingSleep(1000)
 	Dialog($warPreparationsFinishQuestDialogID)
-	Sleep(1000 + GetPing())
+	PingSleep(1000)
 	Info('Done: Finishing War Preparations')
 
 	TakeQuest($questNPC, $professionTestQuestID, $professionTestAcceptQuestDialogID)
 	MoveTo(4187, -948)
-	MoveAggroAndKillInRange(4207, -2892, '', 3000)
+	MoveAggroAndKillInRange(4207, -2892, '', $RANGE_SPIRIT + 500)
 	If $primaryProfession == $ID_MONK Then
 		MoveTo(3868, -4330)
 		Local $npcGwen = GetNearestNPCToCoords(3868, -4330)
 		GoToNPC($npcGwen)
-		Sleep(1000 + GetPing())
+		PingSleep(1000)
 	EndIf
 	MoveTo(3771, -1729)
 	MoveTo(6069, 3865)
@@ -176,9 +176,9 @@ Func InitialSetupLDOA()
 	; This quest never appears as completed either - last dialog to get reward is the completion
 	Info('Finishing Profession Test')
 	GoToNPC($questNPC)
-	Sleep(1000 + GetPing())
+	PingSleep(1000)
 	Dialog($professionTestFinishQuestDialogID)
-	Sleep(1000 + GetPing())
+	PingSleep(1000)
 	Info('Done: Finishing Profession Test')
 
 	MoveTo(2885, 7638)
@@ -336,7 +336,7 @@ Func LDOATitleFarmUnder10()
 	MoveTo(-3640, 10930)
 	Sleep(2000)
 	MoveTo(-3440, 10010)
-	MoveAggroAndKillInRange(-3753, 11131, '', 3000)
+	MoveAggroAndKillInRange(-3753, 11131, '', $RANGE_SPIRIT + 500)
 	If IsPlayerDead() Then Return $FAIL
 	Return $SUCCESS
 EndFunc
@@ -458,7 +458,7 @@ EndFunc
 Func IsLowHealth()
 	Local $me = GetMyAgent()
 	Local $healthRatio = DllStructGetData($me, 'HealthPercent')
-	If $healthRatio > 0 And $healthRatio < $LOW_HEALTH_THRESHOLD Then Return True
+	If Not IsNearlyEqual($healthRatio, 0) And $healthRatio < $LOW_HEALTH_THRESHOLD Then Return True
 	Return False
 EndFunc
 

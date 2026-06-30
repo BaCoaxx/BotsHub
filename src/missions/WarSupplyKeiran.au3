@@ -20,14 +20,16 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID_Items.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
+#include '../../lib/GWA2_ID_Skills.au3'
 #include '../../lib/GWA2_ID.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
 
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
 Global Const $WAR_SUPPLY_KEIRAN_INFORMATIONS = 'For best results, have :' & @CRLF _
@@ -61,17 +63,16 @@ Global Const $KEIRAN_SKILLS_ARRAY			= [$KEIRAN_SNIPER_SHOT,	$KEIRAN_GRAVESTONE_M
 Global Const $KEIRAN_SKILLS_COSTS_ARRAY		= [2,					2,							1,							1,						3,							2,						0,						0]
 Global Const $KEIRAN_SKILLS_COSTS_MAP		= MapFromArrays($KEIRAN_SKILLS_ARRAY, $KEIRAN_SKILLS_COSTS_ARRAY)
 
-Global $warsupply_fight_options = CloneDictMap($default_move_aggro_kill_options)
-$warsupply_fight_options.Item('fightFunction')	= WarSupplyFarmFight
-$warsupply_fight_options.Item('fightRange')		= 1250
+Global $warsupply_fight_options = CloneMap($default_move_aggro_kill_options)
+$warsupply_fight_options['fightFunction']	= WarSupplyFarmFight
+$warsupply_fight_options['fightRange']		= $RANGE_LONGBOW
 ; approximate 20 seconds max duration of initial and final fight
-$warsupply_fight_options.Item('fightDuration')	= 20000
-$warsupply_fight_options.Item('priorityMobs')		= True
-$warsupply_fight_options.Item('callTarget')		= False
-$warsupply_fight_options.Item('lootInFights')		= False
+$warsupply_fight_options['fightDuration']	= 20000
+$warsupply_fight_options['priorityMobs']	= True
+$warsupply_fight_options['callTarget']		= False
 ; Only Krytan chests in Auspicious Beginnings quest which may have useless loot
-$warsupply_fight_options.Item('openChests')		= False
-$warsupply_fight_options.Item('skillsCostMap')	= $KEIRAN_SKILLS_COSTS_MAP
+$warsupply_fight_options['openChests']		= False
+$warsupply_fight_options['skillsCostMap']	= $KEIRAN_SKILLS_COSTS_MAP
 
 ; in Auspicious Beginnings location, the agent ID of Player is always assigned to 2 (can be accessed in GWToolbox)
 Global Const $AGENTID_PLAYER = 2
@@ -261,7 +262,7 @@ Func RunWayPoints()
 			If DllStructGetData($miku, 'X') == 0 And DllStructGetData($miku, 'Y') == 0 Then Return $FAIL
 			; Using 6th healing skill on the way between waypoints to recover until health is full
 			If IsRecharged($KEIRAN_NATURES_BLESSING) And (DllStructGetData($me, 'HealthPercent') < 0.9 Or DllStructGetData($miku, 'HealthPercent') < 0.9) Then UseSkillEx($KEIRAN_NATURES_BLESSING)
-			If CountFoesInRangeOfAgent($me, $warsupply_fight_options.Item('fightRange')) > 0 Then WarSupplyFarmFight($warsupply_fight_options)
+			If CountFoesInRangeOfAgent($me, $warsupply_fight_options['fightRange']) > 0 Then WarSupplyFarmFight($warsupply_fight_options)
 			; Ensuring that Miku is not too far
 			If GetDistance($me, $miku) > 1650 Then
 				Info('Miku is too far. Trying to move to her location')
@@ -281,8 +282,8 @@ Func WarSupplyFarmFight($options = $warsupply_fight_options)
 	If GetMapID() <> $ID_AUSPICIOUS_BEGINNINGS Then Return $FAIL
 	Info('Fighting')
 
-	Local $fightRange = ($options.Item('fightRange') <> Null) ? $options.Item('fightRange') : 1200
-	Local $priorityMobs = ($options.Item('priorityMobs') <> Null) ? $options.Item('priorityMobs') : True
+	Local $fightRange	= $options['fightRange'] <> Null ?		$options['fightRange'] : $RANGE_LONGBOW
+	Local $priorityMobs	= $options['priorityMobs'] <> Null ?	$options['priorityMobs'] : True
 
 	Local $me = Null
 	Local $miku = Null
@@ -423,13 +424,5 @@ Func EvadeAoESkillArea()
 	Local $me = GetMyAgent()
 	Local $myX = DllStructGetData($me, 'X')
 	Local $myY = DllStructGetData($me, 'Y')
-	Local Const $PI = 3.14
-	; range [0, 2*$PI] - full circle in radian degrees
-	Local $randomAngle = Random(0, 2 * $PI)
-	; range [300, 500] - outside of AoE area
-	Local $randomRadius = Random(300, 500)
-	Local $offsetX = $randomRadius * cos($randomAngle)
-	Local $offsetY = $randomRadius * sin($randomAngle)
-	; 0 = no random, because random offset is already calculated
-	MoveTo($myX + $offsetX , $myY + $offsetY, 25, 0)
+	MoveToRadial($myX, $myY, 400)
 EndFunc

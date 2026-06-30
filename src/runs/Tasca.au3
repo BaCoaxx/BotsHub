@@ -16,18 +16,19 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID_Items.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
 #include '../../lib/GWA2_ID.au3'
-#include '../../lib/Utils.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
 #include '../utilities/OmniFarmer.au3'
+#include 'Pongmei.au3'
 
 ; Possible improvements :
 
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
 Global Const $TASCA_DERVISH_CHESTRUNNER_SKILLBAR = 'OgejwyezHT8I6MHQ3l0kNQ4OIQ'
@@ -343,7 +344,6 @@ Func TascaDefendFunction($X, $Y)
 
 	Local $me = GetMyAgent()
 	Local $target = GetNearestEnemyToAgent($me)
-	Local $ping = GetPing()
 	If ($timer_Shadowform == Null Or TimerDiff($timer_Shadowform) > 19500) Then
 		Local $enemiesAreNear = GetDistance($me, $target) < $RANGE_SPELLCAST
 		If $enemiesAreNear Or ($X <> 0 And AreFoesInFront($X, $Y)) Then
@@ -356,14 +356,14 @@ Func TascaDefendFunction($X, $Y)
 			AdlibRegister('UseDeadlyParadox', 750)
 			While IsPlayerAlive() And IsRecharged($TASCA_SHADOWFORM)
 				UseSkillEx($TASCA_SHADOWFORM, $me)
-				Sleep(20 + $ping)
+				PingSleep(50)
 			WEnd
 			$timer_Shadowform = TimerInit()
-			Sleep(20 + $ping)
+			PingSleep(50)
 			If ($timer_DwarvenStability == Null Or TimerDiff($timer_DwarvenStability) > 34000) And GetEnergy() >= 5 Then
 				UseSkillEx($TASCA_DWARVEN_STABILITY)
 				$timer_DwarvenStability = TimerInit()
-				Sleep(20 + $ping)
+				PingSleep(50)
 			EndIf
 			If (GetEnergy() >= 5) Then UseSkillEx($TASCA_DARK_ESCAPE)
 		EndIf

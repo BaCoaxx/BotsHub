@@ -15,14 +15,16 @@
 ; limitations under the License.
 #CE ===========================================================================
 
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2.au3'
+#include-once
+#include '../../lib/GWA2_Assembly.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
 #include '../../lib/GWA2_ID.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
 
-Opt('MustDeclareVars', True)
 
 Global Const $LIGHTBRINGER_SUNSPEAR_FARM_INFORMATIONS = 'For best results, have :' & @CRLF _
 	& '- the quest A Show of Force' & @CRLF _
@@ -104,6 +106,7 @@ Func FarmTheSulfurousWastes()
 	RandomSleep(1500)
 
 	If IsHardmodeEnabled() Then UseConset()
+	UseSummoningStone()
 
 	; 30 groups to vanquish
 	Local Static $foes[][] = [ _
@@ -142,7 +145,6 @@ Func FarmTheSulfurousWastes()
 		[-18000,	-13100,	'Temple Monolith Group 5'		], _
 		[-18000,	-13100,	'Margonite Boss Group'			] _
 	]
-
 	For $i = 0 To 4
 		If MoveToAndAggroWithJunundu($foes[$i][0], $foes[$i][1], $foes[$i][2]) == $FAIL Then Return $FAIL
 	Next
@@ -158,6 +160,7 @@ Func FarmTheSulfurousWastes()
 	If MoveToAndAggroWithJunundu($foes[5][0], $foes[5][1], $foes[5][2]) == $FAIL Then Return $FAIL
 
 	Info('Taking Lightbringer Margonite Blessing')
+	UseSummoningStone()
 	SpeedTeam()
 	MoveTo(-20600, 7270)
 	GoToNPC(GetNearestNPCToCoords(-20600, 7270))
@@ -170,6 +173,7 @@ Func FarmTheSulfurousWastes()
 	Next
 
 	Info('Picking Up Tome')
+	UseSummoningStone()
 	SpeedTeam()
 	MoveTo(-21300, -14000)
 	TargetNearestItem()
@@ -184,6 +188,7 @@ Func FarmTheSulfurousWastes()
 	Next
 
 	Info('Spawning Margonite bosses')
+	UseSummoningStone()
 	SpeedTeam()
 	MoveTo(-16000, -13100)
 	SpeedTeam()

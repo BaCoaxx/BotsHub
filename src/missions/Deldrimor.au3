@@ -16,14 +16,14 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
+#include '../../lib/GWA2_ID_Maps.au3'
+#include '../../lib/GWA2_ID_Quests.au3'
 #include '../../lib/GWA2.au3'
-#include '../../lib/GWA2_ID.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
 
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
 Global Const $DELDRIMOR_FARM_INFORMATIONS = 'For best results, do not cheap out on heroes' & @CRLF _
@@ -65,7 +65,6 @@ Func SetupDeldrimorTitleFarm()
 		Local $questNPC = GetNearestNPCToCoords(-23886, 13881)
 		RandomSleep(750)
 		TakeQuestReward($questNPC, $ID_QUEST_LOST_TREASURE_OF_KING_HUNDAR, $SNOWMAN_ACCEPT_REWARD)
-		RandomSleep(750)
 		Info('Zoning to Olafsted to Refresh Quest')
 		DistrictTravel($ID_OLAFSTEAD, $district_name)
 		Sleep(750)
@@ -109,6 +108,7 @@ Func FarmLairSnowman()
 	RandomSleep(500)
 
 	If IsHardmodeEnabled() Then UseConset()
+	UseSummoningStone()
 
 	FlagMoveAggroAndKillInRange(-14610, 12352, 'First Snowmen Block')
 	FlagMoveAggroAndKillInRange(-16585, 8741, 'Second Snowmen Block')
@@ -132,6 +132,7 @@ Func FarmLairSnowman()
 
 	Info('Wait to Heal after Ice Spouts')
 	RandomSleep(5000)
+	UseSummoningStone()
 
 	MoveAggroAndKillInRange(-12989, -731, 'Lonely Snowman 2')
 	MoveAggroAndKillInRange(-12802, -4446, 'Remainder of Snowmen')
@@ -163,7 +164,6 @@ Func FarmLairSnowman()
 		TargetNearestItem()
 		RandomSleep(500)
 		ActionInteract()
-		ActionInteract()
 		RandomSleep(500)
 	Next
 
@@ -183,7 +183,6 @@ Func FarmLairSnowman()
 		MoveTo(-11274, -17984)
 		TargetNearestItem()
 		RandomSleep(500)
-		ActionInteract()
 		ActionInteract()
 		RandomSleep(500)
 	Next

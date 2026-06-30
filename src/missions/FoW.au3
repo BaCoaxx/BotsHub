@@ -16,15 +16,16 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2_Headers.au3'
+#include '../../lib/GWA2_ID_Items.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
+#include '../../lib/GWA2_ID_Quests.au3'
+#include '../../lib/GWA2_ID.au3'
 #include '../../lib/GWA2.au3'
-#include '../../lib/Utils.au3'
 #include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
+#include '../../lib/Utils.au3'
 
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
 Global Const $FOW_FARM_INFORMATIONS = 'For best results, do not cheap out on heroes' & @CRLF _
@@ -36,8 +37,6 @@ Global Const $FOW_FARM_DURATION = 75 * 60 * 1000
 
 Global Const $SHARD_WOLF_MODELID = 2835
 Global Const $ID_FOW_UNHOLY_TEXTS = 2619
-
-Global $fow_fight_options
 
 Global $fow_farm_setup = False
 
@@ -60,8 +59,6 @@ Func SetupFoWFarm()
 	Info('Setting up farm')
 	TravelToFoWOutpost($district_name)
 	SwitchToHardModeIfEnabled()
-	; Done here in order to pick latest version of default_move_aggro_kill_options
-	$fow_fight_options = CloneDictMap($default_move_aggro_kill_options)
 	$fow_farm_setup = True
 	Info('Preparations complete')
 	Return $SUCCESS
@@ -81,19 +78,19 @@ EndFunc
 
 ;~ Farm exact process - wrapper needed to be able to deregister adlib functions
 Func FoWFarmProcess()
-	UseConsumable($ID_LEGIONNAIRE_SUMMONING_CRYSTAL)
+	UseSummoningStone($ID_LEGIONNAIRE_SUMMONING_CRYSTAL)
 	UseConset()
 	If TowerOfCourage() == $FAIL Then Return $FAIL
-	UseConsumable($ID_LEGIONNAIRE_SUMMONING_CRYSTAL)
+	UseSummoningStone($ID_LEGIONNAIRE_SUMMONING_CRYSTAL)
 	UseConset()
 	If TheGreatBattleField() == $FAIL Then Return $FAIL
-	UseConsumable($ID_LEGIONNAIRE_SUMMONING_CRYSTAL)
+	UseSummoningStone($ID_LEGIONNAIRE_SUMMONING_CRYSTAL)
 	UseConset()
 	If TheTempleOfWar() == $FAIL Then Return $FAIL
-	UseConsumable($ID_LEGIONNAIRE_SUMMONING_CRYSTAL)
+	UseSummoningStone($ID_LEGIONNAIRE_SUMMONING_CRYSTAL)
 	UseConset()
 	If TheSpiderCaveAndFissureShore() == $FAIL Then Return $FAIL
-	UseConsumable($ID_LEGIONNAIRE_SUMMONING_CRYSTAL)
+	UseSummoningStone($ID_LEGIONNAIRE_SUMMONING_CRYSTAL)
 	UseConset()
 	If LakeOfFire() == $FAIL Then Return $FAIL
 	UseConset()
@@ -159,9 +156,9 @@ EndFunc
 
 
 Func TheGreatBattleField()
-	Local $optionsTheGreatBattleField = CloneDictMap($fow_fight_options)
-	$optionsTheGreatBattleField.Item('fightRange') = $RANGE_EARSHOT
-	$optionsTheGreatBattleField.Item('flagHeroesOnFight') = True
+	Local $optionsTheGreatBattleField					= CloneMap($default_move_aggro_kill_options)
+	$optionsTheGreatBattleField['fightRange']			= $RANGE_EARSHOT
+	$optionsTheGreatBattleField['flagHeroesOnFight']	= True
 	Info('Heading to the Battlefield')
 	MoveAggroAndKill(-9500, -6000, '1')
 	FlagMoveAggroAndKill(-6300, 1700, '2', $optionsTheGreatBattleField)
@@ -305,14 +302,14 @@ Func LakeOfFire()
 	MoveAggroAndKillInRange(20500, -8100, '5', $RANGE_EARSHOT)
 	MoveAggroAndKillInRange(20500, -12400, '6', $RANGE_EARSHOT)
 	MoveAggroAndKillInRange(18300, -14000, '7', $RANGE_EARSHOT)
-	MoveAggroAndKillInRange(19500, -15000, '8', $RANGE_EARSHOT * 1.25)
+	MoveAggroAndKillInRange(19500, -15000, '8', $RANGE_LONGBOW)
 	Return IsPlayerOrPartyAlive() ? $SUCCESS : $FAIL
 EndFunc
 
 
 Func TowerOfStrength()
-	Local $optionsTowerOfStrength = CloneDictMap($fow_fight_options)
-	$optionsTowerOfStrength.Item('fightRange') = $RANGE_EARSHOT
+	Local $optionsTowerOfStrength			= CloneMap($default_move_aggro_kill_options)
+	$optionsTowerOfStrength['fightRange']	= $RANGE_EARSHOT
 	Info('Clearing area of Tower of Strength')
 	MoveTo(18300, -14000)
 	MoveTo(20500, -12400)
@@ -353,9 +350,9 @@ EndFunc
 
 
 Func BurningForest()
-	Local $optionsBurningForest = CloneDictMap($fow_fight_options)
-	$optionsBurningForest.Item('fightRange') = $RANGE_EARSHOT * 1.25
-	$optionsBurningForest.Item('flagHeroesOnFight') = True
+	Local $optionsBurningForest					= CloneMap($default_move_aggro_kill_options)
+	$optionsBurningForest['fightRange']			= $RANGE_LONGBOW
+	$optionsBurningForest['flagHeroesOnFight']	= True
 	Info('Heading to Burning Forest')
 	MoveAggroAndKill(15200, -1100, '1')
 	MoveAggroAndKill(17400, 3300, '2')
@@ -381,7 +378,8 @@ Func BurningForest()
 
 	FlagMoveAggroAndKill(13090, 7580, '1', $optionsBurningForest)
 	FlagMoveAggroAndKill(14800, 8500, '2', $optionsBurningForest)
-	$optionsBurningForest.Item('fightRange') = $RANGE_EARSHOT
+
+	$optionsBurningForest['fightRange'] = $RANGE_EARSHOT
 	FlagMoveAggroAndKill(16500, 9100, '3', $optionsBurningForest)
 	FlagMoveAggroAndKill(19000, 8400, '4', $optionsBurningForest)
 	FlagMoveAggroAndKill(20800, 8500, '5', $optionsBurningForest)
@@ -426,15 +424,17 @@ EndFunc
 
 
 Func ForestOfTheWailingLord()
-	Local $optionsForestOfTheWailingLord = CloneDictMap($fow_fight_options)
-	$optionsForestOfTheWailingLord.Item('fightRange') = $RANGE_EARSHOT * 1.25
+	Local $optionsForestOfTheWailingLord			= CloneMap($default_move_aggro_kill_options)
+	$optionsForestOfTheWailingLord['fightRange']	= $RANGE_LONGBOW
 	Info('Clearing forest')
 	MoveAggroAndKill(-17500, 9750, '1')
 	MoveAggroAndKill(-20200, 9500, '2', $optionsForestOfTheWailingLord)
-	$optionsForestOfTheWailingLord.Item('fightRange') = $RANGE_EARSHOT
+
+	$optionsForestOfTheWailingLord['fightRange']	= $RANGE_EARSHOT
 	MoveAggroAndKill(-22000, 11000, '3', $optionsForestOfTheWailingLord)
 	MoveAggroAndKill(-20000, 13000, '4', $optionsForestOfTheWailingLord)
-	$optionsForestOfTheWailingLord.Item('fightRange') = $RANGE_EARSHOT * 1.1
+
+	$optionsForestOfTheWailingLord['fightRange']	= $RANGE_EARSHOT * 1.1
 	MoveAggroAndKill(-18000, 15000, '5')
 	MoveAggroAndKill(-18000, 14000, '6', $optionsForestOfTheWailingLord)
 	KillShardWolf()
@@ -444,7 +444,7 @@ Func ForestOfTheWailingLord()
 	KillShardWolf()
 	If Not IsPlayerOrPartyAlive() Then Return $FAIL
 
-	$optionsForestOfTheWailingLord.Item('fightRange') = $RANGE_EARSHOT
+	$optionsForestOfTheWailingLord['fightRange']	= $RANGE_EARSHOT
 	MoveAggroAndKill(-16160, 13325, '9', $optionsForestOfTheWailingLord)
 	MoveAggroAndKill(-16000, 13500, '10', $optionsForestOfTheWailingLord)
 	; Safer moves
@@ -527,7 +527,7 @@ Func GriffonRun()
 	CommandAll(-9800, -4800)
 	MoveAggroAndKill(-15750, -1750)
 	If Not IsPlayerOrPartyAlive() Then Return $FAIL
-	
+
 
 	Info('Grabbing griffons')
 	MoveAggroAndKill(-13750, -2750, '1')
@@ -536,15 +536,15 @@ Func GriffonRun()
 	MoveAggroAndKill(-7500, 5000, '4')
 	MoveAggroAndKill(-18250, 9500, '5')
 	MoveAggroAndKill(-20000, 9500, '6')
-	
+
 	Info('Picking up quest')
 	MoveTo(-21500, 15000)
 	Local $questNPC = GetNearestNPCToCoords(-21600, 15050)
 	TakeQuest($questNPC, $ID_QUEST_A_GIFT_OF_GRIFFONS, 0x80CD01)
-	
+
 	MoveAggroAndKill(-22000, 11000, '7')
 	RandomSleep(1000)
-	
+
 	Info('Leading griffons back')
 	MoveAggroAndKill(-17300, 9600, '1')
 	MoveAggroAndKill(-16500, 8500, '2')
@@ -571,7 +571,7 @@ Func GriffonRun()
 		MoveAggroAndKill(-15750, -1750)
 		RandomSleep(5000)
 	EndIf
-	
+
 	Local $questNPC = GetNearestNPCToCoords(-15750, -1700)
 	TakeQuestReward($questNPC, $ID_QUEST_THE_WAILING_LORD, 0x80CC07, 0x80CC06)
 	TakeQuestReward($questNPC, $ID_QUEST_A_GIFT_OF_GRIFFONS, 0x80CD07)
@@ -590,12 +590,12 @@ EndFunc
 
 
 Func TempleLoot()
-	Local $optionsTempleLoot = CloneDictMap($fow_fight_options)
+	Local $optionsTempleLoot = CloneMap($default_move_aggro_kill_options)
+	$optionsTempleLoot['fightRange'] = $RANGE_EARSHOT * 2
 	MoveAggroAndKill(-9800, -4800)
 	MoveAggroAndKill(-6800, -3800)
 	MoveAggroAndKill(-8000, 5100)
 	If Not IsRunFailed() And Not IsQuestReward($ID_QUEST_THE_HUNT) Then
-		$optionsTempleLoot.Item('fightRange') = $RANGE_EARSHOT * 2
 		Info('The Hunt is not complete.')
 		Info('Let us make sure we got wolf in the battlefield')
 		MoveAggroAndKill(-5066, 11490, '', $optionsTempleLoot)

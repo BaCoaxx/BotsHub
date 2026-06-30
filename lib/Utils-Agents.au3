@@ -16,11 +16,11 @@
 #CE ===========================================================================
 
 #include-once
-
 #include 'GWA2.au3'
+#include 'GWA2_ID.au3'
+#include 'GWA2_ID_Skills.au3'
 #include 'Utils.au3'
-
-Opt('MustDeclareVars', True)
+#include 'Utils-Console.au3'
 
 
 #Region Agents distances
@@ -50,19 +50,13 @@ Global $party_is_alive = True
 ;~ Count number of alive heroes of the player's party
 Func CountAliveHeroes()
 	Local $aliveHeroes = 0
-	For $i = 1 to 7
+	For $i = 1 to GetHeroCount()
 		Local $heroID = GetHeroID($i)
-		If GetAgentExists($heroID) And Not GetIsDead(GetAgentByID($heroID)) Then $aliveHeroes += 1
+		If Not GetAgentExists($heroID) Then ContinueLoop
+		Local $hero = GetAgentByID($heroID)
+		If Not GetIsDead($hero) Then $aliveHeroes += 1
 	Next
 	Return $aliveHeroes
-EndFunc
-
-
-;~ Count number of alive members of the player's party including 7 heroes and player
-Func CountAlivePartyMembers()
-	Local $alivePartyMembers = CountAliveHeroes()
-	If Not IsPlayerDead Then $alivePartyMembers += 1
-	Return $alivePartyMembers
 EndFunc
 
 
@@ -150,8 +144,14 @@ Func FindHeroesWithRez()
 	Local $heroes[7]
 	Local $count = 0
 	For $heroNumber = 1 To GetHeroCount()
+		Local $agentID = GetHeroID($heroNumber)
+		If $agentID == 0 Then ContinueLoop
+		Local $agent = GetAgentByID($agentID)
+		If Not IsMine($agent) Then ContinueLoop
+	
+		Local $skillbar = GetSkillbar($heroNumber)
 		For $skillSlot = 1 To 8
-			Local $skill = GetSkillbarSkillID($skillSlot, $heroNumber)
+			Local $skill = DllStructGetData($skillbar, 'SkillID' & $skillSlot)
 			If IsRezSkill($skill) Then
 				$heroes[$count] = $heroNumber
 				$count += 1
@@ -225,12 +225,14 @@ EndFunc
 
 
 ;~ Team member has too much malus
-Func TeamHasTooMuchMalus()
+Func GetTeamMemberWithTooMuchMalus()
 	Local $party = GetParty()
-	For $i = 0 To UBound($party)
-		If GetMorale($i) < 0 Then Return True
+	For $i = UBound($party) - 1 To 0 Step -1
+		; Can't read malus on other players and their heroes
+		If Not IsMine($party[$i]) Then ContinueLoop
+		If GetMorale($i) < 0 Then Return $i
 	Next
-	Return False
+	Return -1
 EndFunc
 #EndRegion Party
 
@@ -309,7 +311,7 @@ Func CountNPCsInRangeOfCoords($coordX = Null, $coordY = Null, $npcAllegiance = N
 	EndIf
 	For $agent In $agents
 		If $npcAllegiance <> Null And DllStructGetData($agent, 'Allegiance') <> $npcAllegiance Then ContinueLoop
-		If DllStructGetData($agent, 'HealthPercent') <= 0 Then ContinueLoop
+		If IsNearlyEqual(DllStructGetData($agent, 'HealthPercent'), 0) Then ContinueLoop
 		If GetIsDead($agent) Then ContinueLoop
 		If $MAP_SPIRIT_TYPES[DllStructGetData($agent, 'TypeMap')] <> Null Then ContinueLoop
 		If $condition <> Null And $condition($agent) == False Then ContinueLoop
@@ -326,7 +328,7 @@ EndFunc
 Func GetIntoTeamRange($teamSize = 8, $range = $RANGE_EARSHOT, $maxWait = 50)
 	Local $i = 0
 	While CountTeamInRangeOfAgent(GetMyAgent(), $range) < $teamSize And $i < $maxWait
-		Sleep(200)
+		Sleep(250)
 		$i += 1
 		If IsPlayerDead() Then ExitLoop
 	WEnd
@@ -338,7 +340,7 @@ Func MoveToMiddleOfPartyWithTimeout($timeOut)
 	Local $me = GetMyAgent()
 	Local $timer = TimerInit()
 	Local $position = FindMiddleOfParty()
-	Move($position[0], $position[1], 0)
+	Move($position[0], $position[1])
 	While GetDistanceToPoint($me, $position[0], $position[1]) > $RANGE_ADJACENT And TimerDiff($timer) < $timeOut
 		$position = FindMiddleOfParty()
 		RandomSleep(500)
@@ -369,16 +371,20 @@ EndFunc
 
 
 ;~ Returns the coordinates in the middle of a group of foes nearest to provided position
-Func FindMiddleOfFoes($posX, $posY, $range = $RANGE_AREA)
+Func FindMiddleOfFoes($posX, $posY, $range = $RANGE_AREA, $condition = Null)
 	Local $position[] = [0, 0]
 	Local $nearestFoe = GetNearestEnemyToCoords($posX, $posY)
 	Local $foes = GetFoesInRangeOfAgent($nearestFoe, $range)
+	Local $count = 0
 	For $foe In $foes
-		$position[0] += DllStructGetData($foe, 'X')
-		$position[1] += DllStructGetData($foe, 'Y')
+		If $condition == Null Or $condition($foe) Then
+			$position[0] += DllStructGetData($foe, 'X')
+			$position[1] += DllStructGetData($foe, 'Y')
+			$count += 1
+		EndIf
 	Next
-	$position[0] = $position[0] / Ubound($foes)
-	$position[1] = $position[1] / Ubound($foes)
+	$position[0] = $position[0] / $count
+	$position[1] = $position[1] / $count
 	Return $position
 EndFunc
 
@@ -426,7 +432,7 @@ Func GetNPCsInRangeOfCoords($coordX = Null, $coordY = Null, $npcAllegiance = Nul
 	EndIf
 	For $agent In $agents
 		If $npcAllegiance <> Null And DllStructGetData($agent, 'Allegiance') <> $npcAllegiance Then ContinueLoop
-		If DllStructGetData($agent, 'HealthPercent') <= 0 Then ContinueLoop
+		If IsNearlyEqual(DllStructGetData($agent, 'HealthPercent'), 0) Then ContinueLoop
 		If GetIsDead($agent) Then ContinueLoop
 		If $MAP_SPIRIT_TYPES[DllStructGetData($agent, 'TypeMap')] <> Null Then ContinueLoop
 		If $condition <> Null And $condition($agent) == False Then ContinueLoop
@@ -455,7 +461,7 @@ Func GetNearestNPCInRangeOfCoords($coordX = Null, $coordY = Null, $npcAllegiance
 	EndIf
 	For $agent In $agents
 		If $npcAllegiance <> Null And DllStructGetData($agent, 'Allegiance') <> $npcAllegiance Then ContinueLoop
-		If DllStructGetData($agent, 'HealthPercent') <= 0 Then ContinueLoop
+		If IsNearlyEqual(DllStructGetData($agent, 'HealthPercent'), 0) Then ContinueLoop
 		If GetIsDead($agent) Then ContinueLoop
 		If $MAP_SPIRIT_TYPES[DllStructGetData($agent, 'TypeMap')] <> Null Then ContinueLoop
 		If $condition <> Null And $condition($agent) == False Then ContinueLoop
@@ -483,7 +489,7 @@ Func GetFurthestNPCInRangeOfCoords($npcAllegiance = Null, $coordX = Null, $coord
 	EndIf
 	For $agent In $agents
 		If $npcAllegiance <> Null And DllStructGetData($agent, 'Allegiance') <> $npcAllegiance Then ContinueLoop
-		If DllStructGetData($agent, 'HealthPercent') <= 0 Then ContinueLoop
+		If IsNearlyEqual(DllStructGetData($agent, 'HealthPercent'), 0) Then ContinueLoop
 		If GetIsDead($agent) Then ContinueLoop
 		If $MAP_SPIRIT_TYPES[DllStructGetData($agent, 'TypeMap')] <> Null Then ContinueLoop
 		If $condition <> Null And $condition($agent) == False Then ContinueLoop
@@ -512,7 +518,7 @@ Func BetterGetNearestNPCToCoords($npcAllegiance = Null, $coordX = Null, $coordY 
 	EndIf
 	For $agent In $agents
 		If $npcAllegiance <> Null And DllStructGetData($agent, 'Allegiance') <> $npcAllegiance Then ContinueLoop
-		If DllStructGetData($agent, 'HealthPercent') <= 0 Then ContinueLoop
+		If IsNearlyEqual(DllStructGetData($agent, 'HealthPercent'), 0) Then ContinueLoop
 		If GetIsDead($agent) Then ContinueLoop
 		If $MAP_SPIRIT_TYPES[DllStructGetData($agent, 'TypeMap')] <> Null Then ContinueLoop
 		If $condition <> Null And $condition($agent) == False Then ContinueLoop
@@ -585,7 +591,7 @@ EndFunc
 ;~ Return True if an agent is an NPC, False otherwise
 Func NPCAgentFilter($agent)
 	If DllStructGetData($agent, 'Allegiance') <> $ID_ALLEGIANCE_NPC Then Return False
-	If DllStructGetData($agent, 'HealthPercent') <= 0 Then Return False
+	If IsNearlyEqual(DllStructGetData($agent, 'HealthPercent'), 0) Then Return False
 	If GetIsDead($agent) Then Return False
 	Return True
 EndFunc
@@ -600,7 +606,7 @@ EndFunc
 ;~ Return True if an agent is an enemy, False otherwise
 Func EnemyAgentFilter($agent)
 	If DllStructGetData($agent, 'Allegiance') <> $ID_ALLEGIANCE_FOE Then Return False
-	If DllStructGetData($agent, 'HealthPercent') <= 0 Then Return False
+	If IsNearlyEqual(DllStructGetData($agent, 'HealthPercent'), 0) Then Return False
 	If GetIsDead($agent) Then Return False
 	If DllStructGetData($agent, 'TypeMap') == $ID_TYPEMAP_IDLE_MINION Then Return False
 	Return True
@@ -628,6 +634,30 @@ Func GetNearestAgentToAgent($targetAgent, $agentType = $ID_AGENT_TYPE_NPC, $rang
 
 	SetExtended(Sqrt($nearestDistance))
 	Return $nearestAgent
+EndFunc
+
+
+;~ Returns the nearest agent to specified target agent. $agentFilter is a function which returns True for the agents that should be considered, False for those to skip
+Func GetFurthestAgentToAgent($targetAgent, $agentType = $ID_AGENT_TYPE_NPC, $range = $RANGE_COMPASS, $agentFilter = Null)
+	Local $furthestAgent = Null, $distance = Null, $furthestDistance = -1
+	Local $agents = GetAgentArray($agentType)
+	Local $targetAgentID = DllStructGetData($targetAgent, 'ID')
+	Local $ownID = DllStructGetData(GetMyAgent(), 'ID')
+
+	For $agent In $agents
+		If DllStructGetData($agent, 'ID') == $targetAgentID Then ContinueLoop
+		If DllStructGetData($agent, 'ID') == $ownID Then ContinueLoop
+		If $agentFilter <> Null And Not $agentFilter($agent) Then ContinueLoop
+		$distance = GetDistance($targetAgent, $agent)
+		If $distance > $range Then ContinueLoop
+		If $distance > $furthestDistance Then
+			$furthestAgent = $agent
+			$furthestDistance = $distance
+		EndIf
+	Next
+
+	SetExtended(Sqrt($furthestDistance))
+	Return $furthestAgent
 EndFunc
 
 
@@ -709,6 +739,12 @@ EndFunc
 ;~ Tests if an agent is an item.
 Func IsItemAgentType($agent)
 	Return DllStructGetData($agent, 'Type') = $ID_AGENT_TYPE_ITEM
+EndFunc
+
+
+;~ Tests if an agent is mine (ie: either the character or one of his heroes)
+Func IsMine($agent)
+	Return DllStructGetData($agent, 'MaxEnergy') > 0
 EndFunc
 
 
@@ -823,6 +859,12 @@ EndFunc
 ;~ Tests if an agent is a boss.
 Func GetIsBoss($agent)
 	Return BitAND(DllStructGetData($agent, 'TypeMap'), 0x400) > 0
+EndFunc
+
+
+;~ Tests if an agent is not a boss.
+Func GetIsNotBoss($agent)
+	Return BitAND(DllStructGetData($agent, 'TypeMap'), 0x400) == 0
 EndFunc
 #EndRegion AgentInfo
 

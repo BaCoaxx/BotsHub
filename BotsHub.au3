@@ -27,19 +27,28 @@
 #RequireAdmin
 #NoTrayIcon
 
+Opt('MustDeclareVars', True)
+;Opt("ExpandEnvStrings", 1)
+
 #Region Includes
+#include-once
 #include <Math.au3>
-#include 'lib/GWA2_Headers.au3'
-#include 'lib/GWA2_ID.au3'
+
+#include 'lib/BotsHub-GUI.au3'
 #include 'lib/GWA2.au3'
 #include 'lib/GWA2_Assembly.au3'
 #include 'lib/GWA2_Assembly_Chatlog.au3'
+#include 'lib/GWA2_ID.au3'
+#include 'lib/GWA2_ID_Maps.au3'
+#include 'lib/GWA2_ID_Skills.au3'
+#include 'lib/JSON.au3'
 #include 'lib/Utils.au3'
-#include 'lib/Utils-Agents.au3'
-#include 'lib/Utils-Storage.au3'
+#include 'lib/Utils-Console.au3'
 #include 'lib/Utils-Debugger.au3'
+#include 'lib/Utils-Items_Modstructs.au3'
+#include 'lib/Utils-Shared_Memory.au3'
+#include 'lib/Utils-Storage.au3'
 #include 'lib/Build_PW_Heroic-Refrain.au3'
-#include 'lib/BotsHub-GUI.au3'
 
 #include 'src/farms/CoF.au3'
 #include 'src/farms/Corsairs.au3'
@@ -64,10 +73,12 @@
 #include 'src/missions/FoW.au3'
 #include 'src/missions/Froggy.au3'
 #include 'src/missions/GlintChallenge.au3'
+#include 'src/missions/Kilroy.au3'
 #include 'src/missions/MinisterialCommendations.au3'
 #include 'src/missions/NexusChallenge.au3'
 #include 'src/missions/SoO.au3'
 #include 'src/missions/SunspearArmor.au3'
+#include 'src/missions/TunnelsOfTheForsaken.au3'
 #include 'src/missions/Underworld.au3'
 #include 'src/missions/Voltaic.au3'
 #include 'src/missions/WarSupplyKeiran.au3'
@@ -79,9 +90,10 @@
 #include 'src/utilities/OmniFarmer.au3'
 #include 'src/utilities/TestSuite.au3'
 #include 'src/vanquishes/Asuran.au3'
-#include 'src/vanquishes/Kurzick.au3'
-#include 'src/vanquishes/Kurzick2.au3'
-#include 'src/vanquishes/Luxon.au3'
+#include 'src/vanquishes/KurzickFerndale.au3'
+#include 'src/vanquishes/KurzickDrazach.au3'
+#include 'src/vanquishes/LuxonMountQinkai.au3'
+#include 'src/vanquishes/LuxonSilentSurf.au3'
 #include 'src/vanquishes/Norn.au3'
 #include 'src/vanquishes/Vanguard.au3'
 #EndRegion Includes
@@ -94,10 +106,6 @@ Global Const $NOT_STARTED = -1
 Global Const $SUCCESS = 0
 Global Const $FAIL = 1
 Global Const $PAUSE = 2
-
-Global Const $AVAILABLE_FARMS = '|Asuran|Boreal|CoF|Corsairs|Deldrimor|Dragon Moss|Eden Iris|Feathers|Follower|FoW|FoW Tower of Courage|Froggy|Gemstones|Gemstone Margonite|Gemstone Stygian|Gemstone Torment|' & _
-	'Glint Challenge|Jade Brotherhood|Kournans|Kurzick|Kurzick Drazach|Lightbringer & Sunspear|Lightbringer|LDOA|Luxon|Mantids|Ministerial Commendations|Minotaurs|Nexus Challenge|Norn|OmniFarm|Pongmei|' & _
-	'Raptors|SoO|SpiritSlaves|Sunspear Armor|Tasca|Underworld|Vaettirs|Vanguard|Voltaic|War Supply Keiran|Storage|Tests|TestSuite|Dynamic execution'
 
 Global Const $AVAILABLE_DISTRICTS = '|Random|Random EU|Random US|Random Asia|America|China|English|French|German|International|Italian|Japan|Korea|Polish|Russian|Spanish'
 
@@ -118,10 +126,12 @@ Global $loot_configuration = 'Default Loot Configuration'
 Global $inventory_space_needed = 5
 Global $run_timer = Null
 Global $global_farm_setup = False
-Global $log_level = $LVL_INFO
+
+Global $slave_heartbeat = 0
 
 ; Farm Name;Farm function;Inventory space;Farm duration
 Global $farm_map[]
+Global $gui_enabled
 
 Global $inventory_management_cache[]
 Global $run_options_cache[]
@@ -146,13 +156,13 @@ Global $bags_count = 5
 
 
 #Region Main loops
-Main()
+BotsHubMain()
 
 ;------------------------------------------------------
 ; Title...........:	Main
 ; Description.....:	run the main program
 ;------------------------------------------------------
-Func Main()
+Func BotsHubMain()
 	; Verify validity
 	If @AutoItVersion < '3.3.16.1' Then
 		MsgBox(16, 'Error', 'This bot requires AutoIt version 3.3.16.1 or higher. You are using ' & @AutoItVersion & '.')
@@ -171,7 +181,8 @@ Func Main()
 	LoadDefaultLootConfiguration()
 
 	If $run_mode == 'GUI' Then
-		CreateGUI()
+		$gui_enabled = True
+		CreateBotsHubGUI()
 		ApplyConfigToGUI()
 		FillConfigurationCombo()
 		GUISetState(@SW_SHOWNORMAL)
@@ -180,6 +191,7 @@ Func Main()
 		ScanAndUpdateGameClients()
 		RefreshCharactersComboBox()
 	ElseIf $run_mode == 'HEADLESS' Then
+		$gui_enabled = False
 		; Need minimum 4 things to run a bot: slave index, process ID, character name and farm name
 		If $cmdLine[0] < 4 Then
 			MsgBox(0, 'Error', 'The Hub needs 0 or at least 4 arguments.')
@@ -192,19 +204,30 @@ Func Main()
 
 		Info('Running in CMD mode with process ID: ' & $process_id & ' character name: ' & $character_name & ' farm name: ' & $farm_name)
 
-		Local $openProcess = SafeDllCall9($kernel_handle, 'int', 'OpenProcess', 'int', 0x1F0FFF, 'int', 1, 'int', $process_id)
-		Local $processHandle = IsArray($openProcess) ? $openProcess[0] : 0
-		If $processHandle <> 0 Then
-			Local $windowHandle = GetWindowHandleForProcess($process_id)
-			AddClient($process_id, $processHandle, $windowHandle, $character_name)
-			SelectClient(1)
-		Else
-			MsgBox(0, 'Error', 'GW Process with incorrect handle.')
-			Exit
+		If $character_name <> '' Then
+			Local $openProcess = SafeDllCall9($kernel_handle, 'int', 'OpenProcess', 'int', 0x1F0FFF, 'int', 1, 'int', $process_id)
+			Local $processHandle = IsArray($openProcess) ? $openProcess[0] : 0
+			If $processHandle <> 0 Then
+				Local $windowHandle = GetWindowHandleForProcess($process_id)
+				AddClient($process_id, $processHandle, $windowHandle, $character_name)
+				SelectClient(1)
+			Else
+				MsgBox(0, 'Error', 'GW Process with incorrect handle.')
+				Exit
+			EndIf
 		EndIf
 		; Authentication
 		Authentification($character_name)
 		$runtime_status = 'RUNNING'
+
+
+		If $slave_index >= 0 Then
+			If OpenMasterSlaveSharedMemory($slave_index) Then
+				AdlibRegister('UpdateHeartbeat', 5000)
+			Else
+				Error('Unable to open shared memory blocks.')
+			EndIf
+		EndIf
 	Else
 		MsgBox(0, 'Error', 'Unknown run mode: ' & $run_mode)
 		Exit
@@ -525,13 +548,15 @@ Func FillFarmMap()
 	AddFarmToFarmMap(	'Gemstone Torment',				GemstoneTormentFarm,			10,					$GEMSTONE_TORMENT_FARM_DURATION)
 	AddFarmToFarmMap(	'Glint Challenge',				GlintChallengeFarm,				5,					$GLINT_CHALLENGE_DURATION)
 	AddFarmToFarmMap(	'Jade Brotherhood',				JadeBrotherhoodFarm,			5,					$JADEBROTHERHOOD_FARM_DURATION)
+	AddFarmToFarmMap(	'Kilroy',						KilroyFarm,						10,					$KILROY_FARM_DURATION)
 	AddFarmToFarmMap(	'Kournans',						KournansFarm,					5,					$KOURNANS_FARM_DURATION)
-	AddFarmToFarmMap(	'Kurzick',						KurzickFactionFarm,				15,					$KURZICKS_FARM_DURATION)
-	AddFarmToFarmMap(	'Kurzick Drazach',				KurzickFactionFarmDrazach,		10,					$KURZICKS_FARM_DRAZACH_DURATION)
+	AddFarmToFarmMap(	'Kurzick Ferndale',				KurzickFerndaleFarm,			15,					$KURZICKS_FERNDALE_DURATION)
+	AddFarmToFarmMap(	'Kurzick Drazach',				KurzickDrazachFarm,				10,					$KURZICKS_DRAZACH_DURATION)
 	AddFarmToFarmMap(	'LDOA',							LDOATitleFarm,					0,					$LDOA_FARM_DURATION)
 	AddFarmToFarmMap(	'Lightbringer',					LightbringerFarm,				5,					$LIGHTBRINGER_FARM_DURATION)
 	AddFarmToFarmMap(	'Lightbringer & Sunspear',		LightbringerSunspearFarm,		10,					$LIGHTBRINGER_SUNSPEAR_FARM_DURATION)
-	AddFarmToFarmMap(	'Luxon',						LuxonFactionFarm,				10,					$LUXONS_FARM_DURATION)
+	AddFarmToFarmMap(	'LuxonMQ',						LuxonMountQinkaiFarm,			10,					$LUXONS_MOUNT_QINKAI_DURATION)
+	AddFarmToFarmMap(	'LuxonSS',						LuxonSilentSurfFarm,			10,					$LUXONS_SILENT_SURF_DURATION)
 	AddFarmToFarmMap(	'Mantids',						MantidsFarm,					5,					$MANTIDS_FARM_DURATION)
 	AddFarmToFarmMap(	'Ministerial Commendations',	MinisterialCommendationsFarm,	5,					$COMMENDATIONS_FARM_DURATION)
 	AddFarmToFarmMap(	'Minotaurs',					MinotaursFarm,					5,					$MINOTAURS_FARM_DURATION)
@@ -544,12 +569,13 @@ Func FillFarmMap()
 	AddFarmToFarmMap(	'SpiritSlaves',					SpiritSlavesFarm,				5,					$SPIRIT_SLAVES_FARM_DURATION)
 	AddFarmToFarmMap(	'Sunspear Armor',				SunspearArmorFarm,				5,					$SUNSPEAR_ARMOR_FARM_DURATION)
 	AddFarmToFarmMap(	'Tasca',						TascaChestFarm,					5,					$TASCA_FARM_DURATION)
+	AddFarmToFarmMap(	'TunnelsOfTheForsaken',			TunnelsOfTheForsakenFarm,		5,					$TUNNELS_OF_THE_FORSAKEN_FARM_DURATION)
 	AddFarmToFarmMap(	'Underworld',					UnderworldFarm,					5,					$UW_FARM_DURATION)
 	AddFarmToFarmMap(	'Vaettirs',						VaettirsFarm,					5,					$VAETTIRS_FARM_DURATION)
 	AddFarmToFarmMap(	'Vanguard',						VanguardTitleFarm,				5,					$VANGUARD_TITLE_FARM_DURATION)
 	AddFarmToFarmMap(	'Voltaic',						VoltaicFarm,					10,					$VOLTAIC_FARM_DURATION)
 	AddFarmToFarmMap(	'War Supply Keiran',			WarSupplyKeiranFarm,			10,					$WAR_SUPPLY_FARM_DURATION)
-	AddFarmToFarmMap(	'Execution',					RunTests,						5,					2 * 60 * 1000)
+	AddFarmToFarmMap(	'Manual Mode',					ManualMode,						0,					2 * 60 * 1000)
 	AddFarmToFarmMap(	'Storage',						InventoryManagementBeforeRun,	5,					2 * 60 * 1000)
 	AddFarmToFarmMap(	'Tests',						RunTests,						0,					2 * 60 * 1000)
 	AddFarmToFarmMap(	'TestSuite',					RunTestSuite,					0,					5 * 60 * 1000)
@@ -575,6 +601,7 @@ Func ResetBotsSetups()
 	$soo_farm_setup							= False
 	$spirit_slaves_farm_setup				= False
 	$tasca_farm_setup						= False
+	$tunnels_of_the_forsaken_farm_setup		= False
 	$vaettirs_farm_setup					= False
 	; Those do not need to be reset - party did not change, build did not change, and there is no need to refresh portal
 	; BUT those bots MUST tp to the correct map on every loop
@@ -601,7 +628,7 @@ Func GeneralFarmSetup()
 	If $weaponSlot <> 0 Then
 		Info('Setting player weapon slot to ' & $weaponSlot & ' according to GUI settings')
 		ChangeWeaponSet($weaponSlot)
-		RandomSleep(250)
+		Sleep(500)
 	EndIf
 	If $run_options_cache['team.automatic_team_setup'] Then
 		; Need to be in an outpost to change team and builds
@@ -638,19 +665,25 @@ Func SetupPlayerUsingGlobalSettings()
 	If $run_options_cache['team.load_player_build'] Then
 		Info('Loading player build from GUI')
 		LoadSkillTemplate($run_options_cache['team.player_build'])
-		RandomSleep(250)
+		RandomSleep(500)
 	EndIf
 EndFunc
 
 
 ;~ Auto-detect player build and wire up specialized combat/maintenance routines
 Func SetupPlayerBuildOverrides()
-	If GetHeroProfession(0) <> $ID_PARAGON Then Return
+	; For build detection, we iterate over skills and key skills + profession will give use which build must be used
+	Local $profession = GetHeroProfession(0)
+	Local $skillbar = GetSkillbar(0)
 	For $i = 1 To 8
-		If GetSkillbarSkillID($i) == $ID_HEROIC_REFRAIN Then
-			SetupHRAdrenalineBuild()
-			Return
+		Local $skillID = DllStructGetData($skillbar, 'SkillID' & $i)
+		If $profession == $ID_PARAGON Then
+			If $skillID == $ID_HEROIC_REFRAIN Then Return SetupHRBuild()
+			;If $skillID == ... Then Return ...
 		EndIf
+		;If $profession == $ID_NECROMANCER Then
+			;If $skillID == ... Then Return ...
+		;EndIf
 	Next
 EndFunc
 
@@ -665,7 +698,7 @@ Func SetupTeamUsingGlobalSettings($teamSize = $ID_TEAM_SIZE_LARGE)
 		If $hero <> '' Then
 			AddHero($HERO_IDS_FROM_NAMES[$hero])
 			If $run_options_cache['team.load_hero_' & $i & '_build'] Then
-				RandomSleep(500 + GetPing())
+				RandomSleep(500)
 				Info('Loading hero ' & $i & ' build from GUI')
 				LoadSkillTemplate($run_options_cache['team.hero_' & $i & '_build'], $i)
 			EndIf
@@ -861,3 +894,25 @@ Func Authentification($characterName)
 	Return $SUCCESS
 EndFunc
 #EndRegion Authentification and Login
+
+
+Func UpdateHeartbeat()
+	WriteSlaveToMaster($slave_index, 'heartbeat', $slave_heartbeat)
+	$slave_heartbeat += 1
+
+	Info('Master hearbeat: ' & ReadMasterBroadcast('heartbeat'))
+	Local $enableGUICommand = ReadMasterToSlave($slave_index, 'enableGUI')
+	Info('Enable GUI order: ' & $enableGUICommand)
+	If Not $gui_enabled And $enableGUICommand Then
+		CreateBotsHubGUI()
+		ApplyConfigToGUI()
+		FillConfigurationCombo()
+		GUISetState(@SW_SHOWNORMAL)
+		Info('GW Bot Hub ' & $GW_BOT_HUB_VERSION)
+		$gui_enabled = True
+	EndIf
+	If $gui_enabled And Not $enableGUICommand Then
+		GUISetState(@SW_HIDE)
+		$gui_enabled = False
+	EndIf
+EndFunc

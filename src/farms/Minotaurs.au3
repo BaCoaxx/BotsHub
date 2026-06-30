@@ -16,14 +16,13 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
 #include '../../lib/GWA2_ID.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
 
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
 Global Const $MINOTAURS_FARM_INFORMATIONS = 'For best results, have :' & @CRLF _
@@ -85,6 +84,7 @@ Func FarmMinotaurs()
 	If GetMapID() <> $ID_PROPHETS_PATH Then Return $FAIL
 
 	If IsHardmodeEnabled() Then UseConset()
+	UseSummoningStone()
 
 	; 12 groups to vanquish
 	Local Static $minotaurs[][] = [ _

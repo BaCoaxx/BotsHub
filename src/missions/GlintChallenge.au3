@@ -19,15 +19,14 @@ https://gwpvx.fandom.com/wiki/Build:Team_-_7_Hero_AFK_Glint%27s_Challenge_Farm
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
 #include '../../lib/GWA2_ID.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
 
-
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
 Global Const $GLINT_CHALLENGE_INFORMATIONS = 'Brotherhood armor farm in Glint''s challenge with 7 hero team' & @CRLF _
@@ -38,6 +37,7 @@ Global Const $GLINT_CHALLENGE_INFORMATIONS = 'Brotherhood armor farm in Glint''s
 Global Const $GLINT_CHALLENGE_DURATION = 20 * 60 * 1000
 Global Const $MAX_GLINT_CHALLENGE_DURATION = 30 * 60 * 1000
 
+; TODO: rework builds following 26.06.24 nerfs
 Global Const $GLINT_MESMER_SKILLBAR_OPTIONAL = 'OQBDAcMCT7iTPNB/AmO5ZcNyiA'
 Global Const $GLINT_RITU_SOUL_TWISTER_HERO_SKILLBAR = 'OACjAyhDJPYTnp17xFOtmFsLG'
 Global Const $GLINT_NECRO_FLESH_GOLEM_HERO_SKILLBAR = 'OAhjUsGWIPAtFBxTaO5EeDzxJ'
@@ -97,13 +97,9 @@ EndFunc
 
 ;~ Done here to pick latest version of $default_move_aggro_kill_options
 Func SetupGlintFightOptions()
-	$glint_challenge_fight_options = CloneDictMap($default_move_aggro_kill_options)
-	$glint_challenge_fight_options.Item('fightRange')			= 1500
-	; heroes will be flagged before fight to defend the start location
-	$glint_challenge_fight_options.Item('flagHeroesOnFight')	= False
-	$glint_challenge_fight_options.Item('lootInFights')			= False
+	$glint_challenge_fight_options						= CloneMap($default_move_aggro_kill_options)
 	; there are no chests in Glint Challenge location
-	$glint_challenge_fight_options.Item('openChests')			= False
+	$glint_challenge_fight_options['openChests']		= False
 EndFunc
 
 
@@ -174,6 +170,7 @@ Func GlintChallenge()
 	While Not IsBrotherhoodChestSpawned()
 		If CheckStuck('Glint challenge fight', $MAX_GLINT_CHALLENGE_DURATION) == $FAIL Then Return $FAIL
 		Sleep(5000)
+		UseSummoningStone()
 		KillFoesInArea($glint_challenge_fight_options)
 		If IsPlayerAlive() Then PickUpItems(Null, DefaultShouldPickItem, $RANGE_SPIRIT)
 		If CountFoesInRangeOfAgent(GetMyAgent(), $RANGE_COMPASS) <= 3 Then

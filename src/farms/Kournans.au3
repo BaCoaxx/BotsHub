@@ -16,16 +16,16 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
+#include '../../lib/GWA2_ID_Quests.au3'
 #include '../../lib/GWA2_ID.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
 
 ; Possible improvements :
-
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
 Global Const $ELA_KOURNANS_FARMER_SKILLBAR = 'OgdTkYG/HCHMXctUVwHC3xVI1BA'
@@ -187,7 +187,7 @@ Func KournansFarmLoop()
 	; Find the kournans and get in spirit range
 	; Move to the correct range of the enemies (who are not enemies at this points)(close so that they are affected by spirits but not too close)
 	Local $targetFoe = GetNearestNPCInRangeOfCoords(9600, -650, Null, $RANGE_EARSHOT)
-	GetAlmostInRangeOfAgent($targetFoe, $RANGE_SPIRIT - 500)
+	GetAlmostInRangeOfAgent($targetFoe, 2 * $RANGE_EARSHOT)
 	Local $me = GetMyAgent()
 	Local $x = DllStructGetData($me, 'X')
 	Local $y = DllStructGetData($me, 'Y')
@@ -227,16 +227,16 @@ Func CastOnlyNecessarySpiritsAndBoons($safeX, $safeY)
 	GetAlmostInRangeOfAgent($targetFoe, $RANGE_EARSHOT - 50)
 	; Move back to be safe for a few seconds
 	MoveTo($safeX, $safeY)
-	RandomSleep(4000)
+	RandomSleep(2500)
 	UseHeroSkill($KOURNANS_RANGER_HERO_POSITION, $KOURNANS_MUDDY_TERRAIN)
-	RandomSleep(6000)
+	RandomSleep(2500)
 	UseHeroSkill($KOURNANS_RANGER_HERO_POSITION, $KOURNANS_BRAMBLES)
-	RandomSleep(3000)
+	RandomSleep(1000)
 	UseHeroSkill($KOURNANS_RITUALIST_HERO_POSITION, $KOURNANS_RITUAL_LORD)
 	UseHeroSkill($KOURNANS_RITUALIST_HERO_POSITION, $KOURNANS_EARTHBIND)
 	RandomSleep(1500)
-	UseHeroSkill($KOURNANS_RITUALIST_HERO_POSITION, $KOURNANS_VITAL_WEAPON, GetMyAgent())
-	RandomSleep(1500)
+	UseHeroSkillEx($KOURNANS_RITUALIST_HERO_POSITION, $KOURNANS_VITAL_WEAPON, GetMyAgent())
+	RandomSleep(200)
 EndFunc
 
 
@@ -245,25 +245,25 @@ Func CastFullSpiritsAndBoons($safeX, $safeY)
 	UseHeroSkill($KOURNANS_RANGER_HERO_POSITION, $KOURNANS_EDGE_OF_EXTINCTION)
 	; Get closer to the non-enemies to trigger them into enemies
 	Local $targetFoe = GetFurthestNPCInRangeOfCoords(Null, 9600, -650, $RANGE_EARSHOT)
-	GetAlmostInRangeOfAgent($targetFoe, $RANGE_EARSHOT -100)
+	GetAlmostInRangeOfAgent($targetFoe, $RANGE_EARSHOT - 50)
 	; Move back to be safe for a few seconds
 	MoveTo($safeX, $safeY)
-	RandomSleep(5000)
+	RandomSleep(2000)
 	UseHeroSkill($KOURNANS_RANGER_HERO_POSITION, $KOURNANS_BRAMBLES)
-	RandomSleep(6000)
+	RandomSleep(2500)
 	UseHeroSkill($KOURNANS_RANGER_HERO_POSITION, $KOURNANS_LACERATE)
-	RandomSleep(4000)
+	RandomSleep(2500)
 	UseHeroSkill($KOURNANS_RANGER_HERO_POSITION, $KOURNANS_NATURES_RENEWAL)
-	RandomSleep(6000)
+	RandomSleep(2500)
 	UseHeroSkill($KOURNANS_RANGER_HERO_POSITION, $KOURNANS_MUDDY_TERRAIN)
-	RandomSleep(6000)
+	RandomSleep(2500)
 	UseHeroSkill($KOURNANS_RANGER_HERO_POSITION, $KOURNANS_PESTILENCE)
-	RandomSleep(3000)
+	RandomSleep(1000)
 	UseHeroSkill($KOURNANS_RITUALIST_HERO_POSITION, $KOURNANS_RITUAL_LORD)
 	UseHeroSkill($KOURNANS_RITUALIST_HERO_POSITION, $KOURNANS_EARTHBIND)
 	RandomSleep(1500)
-	UseHeroSkill($KOURNANS_RITUALIST_HERO_POSITION, $KOURNANS_VITAL_WEAPON, GetMyAgent())
-	RandomSleep(1500)
+	UseHeroSkillEx($KOURNANS_RITUALIST_HERO_POSITION, $KOURNANS_VITAL_WEAPON, GetMyAgent())
+	RandomSleep(200)
 EndFunc
 
 
