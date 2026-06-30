@@ -84,6 +84,7 @@ Opt('MustDeclareVars', True)
 #include 'src/missions/WarSupplyKeiran.au3'
 #include 'src/runs/Boreal.au3'
 #include 'src/runs/Pongmei.au3'
+#include 'src/runs/RollerBot.au3'
 #include 'src/runs/Tasca.au3'
 #include 'src/titles/LDOA.au3'
 #include 'src/utilities/Follower.au3'
@@ -106,6 +107,7 @@ Global Const $NOT_STARTED = -1
 Global Const $SUCCESS = 0
 Global Const $FAIL = 1
 Global Const $PAUSE = 2
+
 
 Global Const $AVAILABLE_DISTRICTS = '|Random|Random EU|Random US|Random Asia|America|China|English|French|German|International|Italian|Japan|Korea|Polish|Russian|Spanish'
 
@@ -565,6 +567,7 @@ Func FillFarmMap()
 	AddFarmToFarmMap(	'OmniFarm',						OmniFarm,						5,					5 * 60 * 1000)
 	AddFarmToFarmMap(	'Pongmei',						PongmeiChestFarm,				5,					$PONGMEI_FARM_DURATION)
 	AddFarmToFarmMap(	'Raptors',						RaptorsFarm,					5,					$RAPTORS_FARM_DURATION)
+	AddFarmToFarmMap(	'Rollerbeetle Racing',			RollerBeetleFarm,				0,					$ROLLERBEETLE_FARM_DURATION)
 	AddFarmToFarmMap(	'SoO',							SoOFarm,						15,					$SOO_FARM_DURATION)
 	AddFarmToFarmMap(	'SpiritSlaves',					SpiritSlavesFarm,				5,					$SPIRIT_SLAVES_FARM_DURATION)
 	AddFarmToFarmMap(	'Sunspear Armor',				SunspearArmorFarm,				5,					$SUNSPEAR_ARMOR_FARM_DURATION)
@@ -598,6 +601,7 @@ Func ResetBotsSetups()
 	$mantids_farm_setup						= False
 	$pongmei_farm_setup						= False
 	$raptors_farm_setup						= False
+	$rollerbeetle_farm_setup				= False
 	$soo_farm_setup							= False
 	$spirit_slaves_farm_setup				= False
 	$tasca_farm_setup						= False
