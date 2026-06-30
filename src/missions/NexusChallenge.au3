@@ -16,15 +16,13 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
 #include '../../lib/GWA2_ID.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
 #include '../../lib/Utils.au3'
 
-
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
 Global Const $NEXUS_CHALLENGE_INFORMATIONS = 'Mysterious armor farm'
@@ -92,7 +90,7 @@ EndFunc
 Func NexusChallenge()
 	If GetMapID() <> $ID_THE_SHADOW_NEXUS Then Return $FAIL
 	Sleep(50000)
-
+	UseSummoningStone()
 	; 9 groups to defeat in each loop
 	Local Static $foes[][] = [ _
 		_ ; First loop

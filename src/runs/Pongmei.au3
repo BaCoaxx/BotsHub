@@ -16,17 +16,18 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID_Items.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
 #include '../../lib/GWA2_ID.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
 
 ; Possible improvements :
 ; Replacing shadow form by something to tank assassins and warriors instead might be better
 
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
 Global Const $PONGMEI_CHESTRUNNER_SKILLBAR = 'Ogej4NfMLT3ljbHY4OIQ0k8I6MA'
@@ -329,7 +330,7 @@ Func DefendWhileOpeningChests()
 	If GetEnergy() >= 5 And IsRecharged($PONGMEI_I_AM_UNSTOPPABLE) And GetDistance(GetMyAgent(), $nearestFoe) < $RANGE_AREA Then UseSkillEx($PONGMEI_I_AM_UNSTOPPABLE)
 	If GetEnergy() >= 20 And IsRecharged($PONGMEI_SHADOWFORM) And GetDistance(GetMyAgent(), $nearestFoe) < ($RANGE_SPELLCAST + 200) Then
 		UseSkillEx($PONGMEI_DEADLY_PARADOX)
-		RandomSleep(20)
+		RandomSleep(50)
 		UseSkillEx($PONGMEI_SHADOWFORM)
 	EndIf
 EndFunc

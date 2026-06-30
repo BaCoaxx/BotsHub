@@ -16,15 +16,18 @@
 #CE ===========================================================================
 
 #include-once
-
-#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID_Items.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
 #include '../../lib/GWA2_ID.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
-#include '../../lib/Utils-Debugger.au3'
 
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
+; TODO: rework builds following 26.06.24 nerfs
 ;Global Const $GEMSTONES_MESMER_SKILLBAR = 'OQBCAswDPVP/DMd5Zu2Nd6B'
 Global Const $GEMSTONES_MESMER_SKILLBAR = 'OQBDAcMCT7iTPNB/AmO5ZcNyiA'
 Global Const $GEMSTONES_HERO_1_SKILLBAR = 'OQNUAUBPwmMnAcqpb6lDyAXA0I'
@@ -121,16 +124,12 @@ EndFunc
 
 ;~ Done here to pick latest version of $default_move_aggro_kill_options
 Func SetupGemstonesFightOptions()
-	$gemstones_fight_options = CloneDictMap($default_move_aggro_kill_options)
-	; == $RANGE_EARSHOT * 1.5 ; extended range to also target special foes, which can stand far away
-	$gemstones_fight_options.Item('fightRange')			= 1500
+	$gemstones_fight_options						= CloneMap($default_move_aggro_kill_options)
 	; heroes will be flagged before fight to defend the start location
-	$gemstones_fight_options.Item('flagHeroesOnFight')	= False
-	$gemstones_fight_options.Item('priorityMobs')		= True
-	$gemstones_fight_options.Item('skillsCostMap')		= $GEM_SKILLS_COSTS_MAP
-	$gemstones_fight_options.Item('lootInFights')		= False
+	$gemstones_fight_options['priorityMobs']		= True
+	$gemstones_fight_options['skillsCostMap']		= $GEM_SKILLS_COSTS_MAP
 	; there are no chests in Ebony Citadel of Mallyx location
-	$gemstones_fight_options.Item('openChests')			= False
+	$gemstones_fight_options['openChests']			= False
 EndFunc
 
 
@@ -151,7 +150,7 @@ EndFunc
 Func GemstonesFarmLoop()
 	If TalkToZhellix() == $FAIL Then Return $FAIL
 	WalkToSpotGemstonesFarm()
-	UseConsumable($ID_LEGIONNAIRE_SUMMONING_CRYSTAL)
+	UseSummoningStone()
 	Sleep(2000)
 	If Defend() == $FAIL Then Return $FAIL
 	Return $SUCCESS
@@ -213,7 +212,7 @@ Func IsZhellixPerformingRitual()
 
 	Local $me = GetMyAgent()
 	Local $zhellix = GetAgentByID($AGENTID_ZHELLIX)
-	Local $foesCount = CountFoesInRangeOfAgent($me, $gemstones_fight_options.Item('fightRange'))
+	Local $foesCount = CountFoesInRangeOfAgent($me, $gemstones_fight_options['fightRange'])
 	; After all waves are finished, Zhellix leaves citadel's entrance area where player is, which makes below check False
 	Return (Not GetIsDead($zhellix) And GetDistance($me, $zhellix) < 1500) Or $foesCount > 0
 EndFunc

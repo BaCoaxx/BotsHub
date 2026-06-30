@@ -15,13 +15,13 @@ https://gwpvx.fandom.com/wiki/Build:R/N_HM_Stygian_Veil_Trapper
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-Opt('MustDeclareVars', True)
-
-#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
+#include '../../lib/GWA2_ID_Quests.au3'
 #include '../../lib/GWA2_ID.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
 
 #Region Configuration
@@ -58,7 +58,6 @@ Global Const $STYGIAN_RANGER_WINNOWING			= 7
 Global Const $STYGIAN_RANGER_MUDDY_TERRAIN		= 8
 
 ; ranger hero
-; TODO: consider taking Brambles, Lacerate, Earthbind, and maybe move some more spirits at AoE range to block foes better
 Global Const $STYGIAN_HERO_SUCCOR				= 1
 Global Const $STYGIAN_HERO_EDGE_OF_EXTINCTION	= 2
 Global Const $STYGIAN_HERO_LACERATE				= 3
@@ -87,13 +86,10 @@ Global Const $MAX_GEMSTONE_STYGIAN_FARM_DURATION = 16 * 60 * 1000
 Global Const $STYGIANS_RANGE_SHORT = 800
 Global Const $STYGIANS_RANGE_LONG = 1300
 
-Global $stygian_run_options = CloneDictMap($default_move_defend_options)
-$stygian_run_options.Item('defendFunction')		= StygianCheckRunBuffs
-$stygian_run_options.Item('moveTimeOut')			= 3 * 60 * 1000
-$stygian_run_options.Item('randomFactor')			= 20
-$stygian_run_options.Item('hosSkillSlot')			= 0
-$stygian_run_options.Item('deathChargeSkillSlot')	= 0
-$stygian_run_options.Item('openChests')			= False
+Global $stygian_run_options						= CloneMap($default_move_defend_options)
+$stygian_run_options['defendFunction']			= StygianCheckRunBuffs
+$stygian_run_options['moveTimeOut']				= 3 * 60 * 1000
+$stygian_run_options['randomFactor']			= 20
 
 Global $stygian_player_profession = $ID_MESMER
 Global $gemstone_stygian_farm_setup = False
@@ -190,7 +186,7 @@ Func GoToStygianVeil()
 		MoveTo(6798, -15867)
 		MoveTo(1315, -17924)
 		MoveTo(-785, -18969)
-		Move(-1100, -20000, 0)
+		Move(-1100, -20000)
 		Sleep(8000)
 	WEnd
 EndFunc
@@ -248,12 +244,12 @@ Func StygianFarmRanger()
 	If IsPlayerDead() Then Return $FAIL
 	GoToHidingSpot()
 	If StygianJobRanger() == $FAIL Then Return $FAIL
+	CancelAll()
 	MoveTo(9900, -5200)
 	If IsPlayerDead() Then Return $FAIL
 	RandomSleep(7500)
 	UseHeroSkill(1, $STYGIAN_HERO_SUCCOR, GetMyAgent())
 	RandomSleep(7500)
-	CancelAll()
 	If StygianJobRanger() == $FAIL Then Return $FAIL
 	;MoveTo(7337, -9709)
 	;MoveTo(9071, -7330)
@@ -309,57 +305,26 @@ Func StygianJobRanger()
 	MoveTo(8269, -11160)
 	MoveTo(8177, -11171, 0, 0)
 
-	; Always use Spike with Flame - same cooldown
-	UseSkillEx($STYGIAN_RANGER_TRAPPERS_SPEED)
-	; -1.5	-	Speed at 20
-	UseSkillEx($STYGIAN_RANGER_DUST_TRAP)
-	; 0		-	Speed at 18.5	Dust at 22.5
-	UseSkillEx($STYGIAN_RANGER_SPIKE_TRAP)
-	UseSkillEx($STYGIAN_RANGER_FLAME_TRAP)
-	; 3		-	Speed at 15.5	Dust at 19.5	Spike at 13.5
-	Sleep(13500)
-	; 16.5	-	Speed at 2		Dust at 6		Spike up
-	UseSkillEx($STYGIAN_RANGER_SPIKE_TRAP)
-	UseSkillEx($STYGIAN_RANGER_FLAME_TRAP)
-	; 19.5	-	Speed up		Dust at 3		Spike at 13.5
-	UseSkillEx($STYGIAN_RANGER_TRAPPERS_SPEED)
-	; 19.5	-	Speed at 20		Dust at 3		Spike at 13.5
-	Sleep(3000)
-	; 22.5	-	Speed at 17		Dust up			Spike at 10.5
-	UseSkillEx($STYGIAN_RANGER_DUST_TRAP)
-	; 24	-	Speed at 15.5	Dust at 22.5	Spike at 9
-	Sleep(9000)
-	; 33	-	Speed at 6.5	Dust at 13.5	Spike up
-	UseSkillEx($STYGIAN_RANGER_SPIKE_TRAP)
-	UseSkillEx($STYGIAN_RANGER_FLAME_TRAP)
-	; 36	-	Speed at 3.5	Dust at 10.5	Spike at 13.5
-	UseHeroSkill(1, $STYGIAN_HERO_LACERATE)
-	Sleep(10500)
 	UseHeroSkill(1, $STYGIAN_HERO_EDGE_OF_EXTINCTION)
-	; 46.5	-	Speed up		Dust up			Spike at 3
-	UseSkillEx($STYGIAN_RANGER_TRAPPERS_SPEED)
-	UseSkillEx($STYGIAN_RANGER_DUST_TRAP)
-	; 48	-	Speed at 18.5	Dust at 22.5	Spike at 1.5
-	Sleep(1500)
-	; 49.5	-	Speed at 17		Dust at 21		Spike up
-	UseSkillEx($STYGIAN_RANGER_SPIKE_TRAP)
-	UseSkillEx($STYGIAN_RANGER_FLAME_TRAP)
-	; 52.5	-	Speed at 14		Dust at 18		Spike at 13.5
-	;Sleep(14000)
-	UseHeroSkill(1, $STYGIAN_HERO_BRAMBLES)
 	UseSkillEx($STYGIAN_RANGER_WINNOWING)
-	CommandAll(9900, -5200)
 	UseSkillEx($STYGIAN_RANGER_MUDDY_TERRAIN)
-	Sleep(4000)
-	; 66.5	-	Speed up		Dust at 4		Spike up
-	UseSkillEx($STYGIAN_RANGER_TRAPPERS_SPEED)
-	UseSkillEx($STYGIAN_RANGER_SPIKE_TRAP)
-	UseSkillEx($STYGIAN_RANGER_FLAME_TRAP)
-	; 66.5	-	Speed at 17		Dust at 1		Spike at 13.5
-	Sleep(1000)
-	; 67.5	-	Speed at 16		Dust up			Spike at 12.5
-	UseSkillEx($STYGIAN_RANGER_DUST_TRAP)
-	; 69	-	Speed at 14.5	Dust at 22.5	Spike at 11
+	UseHeroSkill(1, $STYGIAN_HERO_LACERATE)
+	; Traps last 90s - 90s to place max traps
+	For $i = 0 To 2
+		UseSkillEx($STYGIAN_RANGER_TRAPPERS_SPEED)
+		Local $timer = TimerInit()
+		While TimerDiff($timer) < 23000
+			If IsRecharged($STYGIAN_RANGER_DUST_TRAP) Then
+				UseSkillEx($STYGIAN_RANGER_DUST_TRAP)
+			ElseIf IsRecharged($STYGIAN_RANGER_SPIKE_TRAP) Then
+				UseSkillEx($STYGIAN_RANGER_SPIKE_TRAP)
+			ElseIf IsRecharged($STYGIAN_RANGER_FLAME_TRAP) Then
+				UseSkillEx($STYGIAN_RANGER_FLAME_TRAP)
+			EndIf
+			Sleep(100)
+		WEnd
+	Next
+	UseHeroSkill(1, $STYGIAN_HERO_BRAMBLES)
 
 	Local $target = GetNearestEnemyToAgent(GetMyAgent())
 	GetAlmostInRangeOfAgent($target)

@@ -13,13 +13,12 @@ https://gwpvx.fandom.com/wiki/Build:E/A_Obsidian_Flesh_Gloom_Farmer
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-Opt('MustDeclareVars', True)
-
-#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
 #include '../../lib/GWA2_ID.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
 
 
@@ -30,7 +29,7 @@ Global Const $EA_TORMENT_SKILLBAR = 'OgdTkSFzSC3xF0YQbAYYYgXoXA'
 Global Const $TORMENT_DEATHS_CHARGE				= 1
 Global Const $TORMENT_ELEMENTAL_LORD			= 2
 Global Const $TORMENT_GLYPH_OF_ELEMENTAL_POWER	= 3
-Global Const $TORMENT_OBSIDIAN_FLESH				= 4
+Global Const $TORMENT_OBSIDIAN_FLESH			= 4
 Global Const $TORMENT_METEOR_SHOWER				= 5
 Global Const $TORMENT_LAVA_FONT					= 6
 Global Const $TORMENT_FLAME_BURST				= 7
@@ -61,14 +60,13 @@ Global Const $TORMENT_WEAPON_SLOT_STAFF = 2
 ; Weapon of enchanting 20% and +5 Energy and a focus +15Energy/-1Regeneration for more energy
 Global Const $TORMENT_WEAPON_SLOT_FOCUS = 3
 
-Global $torment_run_options = CloneDictMap($default_move_defend_options)
-$torment_run_options.Item('defendFunction')		= DefendTormentFarm
-$torment_run_options.Item('moveTimeOut')			= 3 * 60 * 1000
-$torment_run_options.Item('randomFactor')			= 200
-$torment_run_options.Item('hosSkillSlot')			= 0
-$torment_run_options.Item('deathChargeSkillSlot')	= $TORMENT_DEATHS_CHARGE
+Global $torment_run_options						= CloneMap($default_move_defend_options)
+$torment_run_options['defendFunction']			= DefendTormentFarm
+$torment_run_options['moveTimeOut']				= 3 * 60 * 1000
+$torment_run_options['randomFactor']			= 200
+$torment_run_options['deathChargeSkillSlot']	= $TORMENT_DEATHS_CHARGE
 ; chests in Ravenheart Gloom should have good loot
-$torment_run_options.Item('openChests')			= True
+$torment_run_options['openChests']				= True
 
 Global $gemstone_torment_farm_setup = False
 
@@ -134,7 +132,7 @@ Func GoToRavenHeartGloom()
 		MoveTo(6798, -15867)
 		MoveTo(5487, -17983)
 		MoveTo(6489, -20099)
-		Move(6700, -21250, 0)
+		Move(6700, -21250)
 		Sleep(8000)
 	WEnd
 EndFunc
@@ -227,9 +225,9 @@ Func DefendTormentFarm()
 
 	If (DllStructGetData($me, 'HealthPercent') < 0.3 Or _
 			(DllStructGetData($me, 'HealthPercent') < 0.4 And GetHasCondition($me))) And _
-			CountFoesInRangeOfAgent(GetMyAgent(), $RANGE_EARSHOT) > 0 And _
+			CountFoesInRangeOfAgent(GetMyAgent(), $RANGE_SPELLCAST) > 0 And _
 			IsRecharged($TORMENT_DEATHS_CHARGE) And GetEnergy() > 5 Then
-		$target = GetFurthestNPCInRangeOfCoords($ID_ALLEGIANCE_FOE, DllStructGetData($me, 'X'), DllStructGetData($me, 'Y'), $RANGE_EARSHOT)
+		$target = GetFurthestNPCInRangeOfCoords($ID_ALLEGIANCE_FOE, DllStructGetData($me, 'X'), DllStructGetData($me, 'Y'), $RANGE_SPELLCAST)
 		UseSkillTimed($TORMENT_DEATHS_CHARGE, $target)
 	EndIf
 EndFunc

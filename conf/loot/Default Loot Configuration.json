@@ -910,6 +910,7 @@
 			}
 		},
 		"Armor salvageables": {
+			"White": false,
 			"Blue": true,
 			"Purple": true,
 			"Gold": true
@@ -1038,6 +1039,7 @@
 		"Keys": true
 	},
 	"Identify items": {
+		"White": false,
 		"Blue": true,
 		"Purple": true,
 		"Gold": true
@@ -1632,7 +1634,7 @@
 					"Of Enchanting (Enchantments last 20% longer)": false,
 					"Of The Warrior": false,
 					"Of The Ranger": false,
-					"Of The Necromancer": false,
+					"Of The Necromancer": true,
 					"Of The Mesmer": false,
 					"Of The Elementalist": false,
 					"Of The Monk": false,
@@ -1708,7 +1710,7 @@
 					"Of Quickening (Halves skill recharge of spells - Chance 10%)": false,
 					"Of The Warrior": false,
 					"Of The Ranger": false,
-					"Of The Necromancer": false,
+					"Of The Necromancer": true,
 					"Of The Mesmer": false,
 					"Of The Elementalist": false,
 					"Of The Monk": false,
@@ -2436,6 +2438,7 @@
 			}
 		},
 		"Armor salvageables": {
+			"White": false,
 			"Blue": false,
 			"Purple": false,
 			"Gold": false
@@ -3195,6 +3198,7 @@
 			}
 		},
 		"Armor salvageables": {
+			"White": true,
 			"Blue": true,
 			"Purple": true,
 			"Gold": true
@@ -4203,6 +4207,7 @@
 			}
 		},
 		"Armor salvageables": {
+			"White": false,
 			"Blue": false,
 			"Purple": false,
 			"Gold": false

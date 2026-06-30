@@ -16,14 +16,15 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2_Headers.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
+#include '../../lib/GWA2_ID_Quests.au3'
+#include '../../lib/GWA2_ID.au3'
 #include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
 
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
 Global Const $D_COF_SKILLBAR = 'OgCjkqqLrSihdftXYijhOXhX0kA'
@@ -184,7 +185,7 @@ EndFunc
 Func CleanCoFMobs()
 	Local $target = GetNearestAgentToAgent(GetMyAgent(), $ID_AGENT_TYPE_NPC, $RANGE_COMPASS, IsUndead)
 	Local $clock = False
-	While $target <> Null And GetDistance(GetMyAgent(), $target) < $RANGE_EARSHOT
+	While $target <> Null And GetDistance(GetMyAgent(), $target) < $MOB_AGGRO_RANGE
 		If Not $clock And GetSkillbarSkillAdrenaline($COF_CRIPPLING_VICTORY) >= 150 Then
 			UseSkillEx($COF_CRIPPLING_VICTORY, $target)
 			$clock = True

@@ -14,14 +14,16 @@ https://gwpvx.fandom.com/wiki/Build:Team_-_1_Hero_Whirling_Defense_City_Farmer
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
+#include '../../lib/GWA2_ID_Quests.au3'
+#include '../../lib/GWA2_ID_Skills.au3'
 #include '../../lib/GWA2_ID.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
 
-Opt('MustDeclareVars', True)
 
 #Region Configuration
 ; === Build ===
@@ -102,16 +104,14 @@ Global Const $GEMSTONE_MARGONITE_FARM_DURATION = 5 * 60 * 1000
 Global Const $MAX_GEMSTONE_MARGONITE_FARM_DURATION = 10 * 60 * 1000
 Global Const $MARGONITES_RANGE = 800
 
-Global $margonite_move_options = CloneDictMap($default_move_defend_options)
-$margonite_move_options.Item('defendFunction')		= MargoniteDefend
-$margonite_move_options.Item('moveTimeOut')			= 100 * 1000
-$margonite_move_options.Item('randomFactor')			= 25
-$margonite_move_options.Item('hosSkillSlot')			= 0
-$margonite_move_options.Item('deathChargeSkillSlot')	= $MARGONITE_DEATHS_CHARGE
-$margonite_move_options.Item('openChests')			= False
+Global $margonite_move_options									= CloneMap($default_move_defend_options)
+$margonite_move_options['defendFunction']						= MargoniteDefend
+$margonite_move_options['moveTimeOut']							= 100 * 1000
+$margonite_move_options['randomFactor']							= 25
+$margonite_move_options['deathChargeSkillSlot']					= $MARGONITE_DEATHS_CHARGE
 
-Global $margonite_move_options_elementalist = CloneDictMap($margonite_move_options)
-$margonite_move_options_elementalist.Item('deathChargeSkillSlot') = 0
+Global $margonite_move_options_elementalist						= CloneMap($margonite_move_options)
+$margonite_move_options_elementalist['deathChargeSkillSlot']	= 0
 
 Global $margonite_obsidian_flesh_timer		= TimerInit()
 Global $margonite_stoneflesh_aura_timer		= TimerInit()
@@ -210,9 +210,9 @@ EndFunc
 
 Func EnableMargoniteHeroSkills()
 	EnableHeroSkillSlot(1, $MARGONITE_HERO_BLESSED_SIGNET)
-	Sleep(25 + GetPing())
+	PingSleep(50)
 	EnableHeroSkillSlot(1, $MARGONITE_HERO_TROLL_UNGUENT)
-	Sleep(25 + GetPing())
+	PingSleep(50)
 EndFunc
 
 
@@ -233,7 +233,7 @@ Func GoToCityOfTorcqua()
 		MoveTo(6816, -13634)
 		MoveTo(8258, -10419)
 		MoveTo(10180, -10714)
-		Move(11250, -11350, 0)
+		Move(11250, -11350)
 		Sleep(8000)
 	WEnd
 EndFunc
@@ -245,7 +245,7 @@ Func CastBondsMargoniteFarm()
 	; Last 2 enchantments are least important so these may deactivate when hero energy drops to 0, which is unlikely
 	; Disable blessed signet hero skill so that hero does not mess up below sequence with using that skill in wrong moment
 	DisableHeroSkillSlot(1, $MARGONITE_HERO_BLESSED_SIGNET)
-	Sleep(25 + GetPing())
+	PingSleep(50)
 
 	UseHeroSkillTimed(1, $MARGONITE_HERO_BALTHAZAR_SPIRIT, GetMyAgent())	; costs 10 energy
 	Sleep(10000)																			; wait until energy is recovered, should recover 10 energy with 3 energy pips
@@ -266,7 +266,7 @@ Func CastBondsMargoniteFarm()
 
 	; Enable blessed signet skill so that hero uses it whenever it is recharged
 	EnableHeroSkillSlot(1, $MARGONITE_HERO_BLESSED_SIGNET)
-	Sleep(25 + GetPing())
+	PingSleep(50)
 
 	Return $SUCCESS
 EndFunc
@@ -389,7 +389,7 @@ EndFunc
 Func MargoniteMonkHeroHeal()
 	Local $monkHero = GetAgentByID(GetHeroID(1))
 	If IsRecharged($MARGONITE_HERO_TROLL_UNGUENT, 1) And _
-			GetEnergy($monkHero) > 10 And DllStructGetData($monkHero, 'HealthPercent') < 1 And _
+			GetEnergy($monkHero) > 10 And Not IsNearlyEqual(DllStructGetData($monkHero, 'HealthPercent'), 1) And _
 			GetEffect($ID_TROLL_UNGUENT, 1) == Null Then
 		UseHeroSkill(1, $MARGONITE_HERO_TROLL_UNGUENT)
 	EndIf
@@ -428,7 +428,7 @@ Func MargoniteCheckBuffs()
 		If IsRecharged($MARGONITE_DEATHS_CHARGE) And Not IsRecharged($MARGONITE_SHADOWFORM) And _
 				GetDistance($me, $target) < $MARGONITES_RANGE And DllStructGetData(GetMyAgent(), 'HealthPercent') < 0.3 Then
 			UseSkillEx($MARGONITE_DEATHS_CHARGE, $target)
-			Sleep(20 + GetPing())
+			PingSleep(50)
 		EndIf
 	EndIf
 	Return IsPlayerAlive() ? $SUCCESS : $FAIL

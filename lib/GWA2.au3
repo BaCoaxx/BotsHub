@@ -6,10 +6,15 @@
 
 #include-once
 
+#include 'GWA2_Assembly.au3'
 #include 'GWA2_Headers.au3'
+#include 'GWA2_ID_Items.au3'
+#include 'GWA2_ID_Maps.au3'
 #include 'GWA2_ID.au3'
 #include 'Utils.au3'
+#include 'Utils-Console.au3'
 #include 'Utils-Debugger.au3'
+#include 'Utils-Storage.au3'
 
 ; Required for memory access, opening external process handles and injecting code
 #RequireAdmin
@@ -102,11 +107,27 @@ Miscellaneous
 
 
 #Region Movement
+;~ Move to a random location around the given coordinates. Returns True if successful
+Func MoveRadial($x, $y, $distance)
+	Local Static $directionIndex = Random(0, 7, 1)
+	Local $angle = $directionIndex * $PI / 4
+	$directionIndex = Mod($directionIndex + 1, 8)
+	Return Move($x + $distance * Cos($angle), $y + $distance * Sin($angle))
+EndFunc
+
+
+;~ Avoid usage, it's a square around the original position, making it awkward, it can also not add any random
+;~ Move to a random location around the given coordinates. Returns True if successful
+Func RandomMove($X, $Y, $random = 50)
+	Return Move($X + Random(-$random, $random), $Y + Random(-$random, $random))
+EndFunc
+
+
 ;~ Move to a location. Returns True if successful
-Func Move($X, $Y, $random = 50)
+Func Move($X, $Y)
 	If GetAgentExists(GetMyID()) Then
-		DllStructSetData($MOVE_STRUCT, 2, $X + Random(-$random, $random))
-		DllStructSetData($MOVE_STRUCT, 3, $Y + Random(-$random, $random))
+		DllStructSetData($MOVE_STRUCT, 2, $X)
+		DllStructSetData($MOVE_STRUCT, 3, $Y)
 		Enqueue($MOVE_STRUCT_PTR, 16)
 		Return True
 	Else
@@ -515,7 +536,7 @@ EndFunc
 
 
 ;~ Returns effect struct or array of effects.
-Func GetEffect($skillID = 0, $heroIndex = 0)
+Func GetEffect($skillID = 0, $agentID = GetMyID())
 	Local $effectCount, $effectStructAddress
 	; Offsets have to be kept separate - else we risk cross-call contamination - Avoid ReDim !
 	Local $offset1[] = [0, 0x18, 0x2C, 0x510]
@@ -525,7 +546,7 @@ Func GetEffect($skillID = 0, $heroIndex = 0)
 	For $i = 0 To $count[1] - 1
 		Local $offset2[] = [0, 0x18, 0x2C, 0x508, 0x24 * $i]
 		$buffer = MemoryReadPtr($processHandle, $base_address_ptr, $offset2)
-		If $buffer[1] == GetHeroID($heroIndex) Then
+		If $buffer[1] == $agentID Then
 			Local $offset3[] = [0, 0x18, 0x2C, 0x508, 0x1C + 0x24 * $i]
 			$effectCount = MemoryReadPtr($processHandle, $base_address_ptr, $offset3)
 
@@ -554,8 +575,8 @@ EndFunc
 
 
 ;~ Returns time remaining before an effect expires, in milliseconds.
-Func GetEffectTimeRemaining($effect, $heroIndex = 0)
-	If Not IsDllStruct($effect) Then $effect = GetEffect($effect, $heroIndex)
+Func GetEffectTimeRemaining($effect, $agentID = GetMyID())
+	If Not IsDllStruct($effect) Then $effect = GetEffect($effect, $agentID)
 	; if hero or player (0) is not under specified effect then 0 will be returned here
 	If $effect == Null Then Return 0
 	If IsArray($effect) Then Return 0
@@ -747,7 +768,7 @@ EndFunc
 ;		If $skillbarStruct[0] = 0 Then $deadlock = TimerInit()
 ;		If TimerDiff($deadlock) > $deadlockTime And $deadlockTime > 0 Then Return False
 ;	WEnd
-;	RandomSleep($waitingTime + GetPing())
+;	PingSleep($waitingTime)
 ;	Return True
 ;EndFunc
 
@@ -758,10 +779,10 @@ Func WaitMapLoading($mapID = -1, $deadlockTime = 10000, $waitingTime = 2500)
 	Local $processHandle = GetProcessHandle()
 	; All variables are not updated at the same time
 	While GetMyID() == 0 Or GetMaxAgents() == 0 Or ($mapID <> -1 And GetMapID() <> $mapID)
-		Sleep(250 + GetPing())
+		PingSleep(250)
 		If TimerDiff($deadlock) > $deadlockTime And $deadlockTime > 0 Then Return False
 	WEnd
-	RandomSleep($waitingTime + 250 + GetPing())
+	PingSleep($waitingTime + 250)
 	Return True
 EndFunc
 #EndRegion Travel
@@ -987,17 +1008,17 @@ Func GetAgentArray($type = 0)
 
 	Local $pointer, $count = 0
 	Local $agentBase = MemoryRead($processHandle, $agent_base_address, 'ptr')
-	Local $agentPtrBuffer = DllStructCreate("ptr[" & $maxAgents & "]")
+	Local $agentPtrBuffer = DllStructCreate('ptr[' & $maxAgents & ']')
 
-	SafeDllCall13($kernel_handle, "bool", "ReadProcessMemory", "handle", $processHandle, "ptr", $agentBase, "struct*", $agentPtrBuffer, "ulong_ptr", 4 * $maxAgents, "ulong_ptr*", 0)
+	SafeDllCall13($kernel_handle, 'bool', 'ReadProcessMemory', 'handle', $processHandle, 'ptr', $agentBase, 'struct*', $agentPtrBuffer, 'ulong_ptr', 4 * $maxAgents, 'ulong_ptr*', 0)
 
 	For $i = 1 To $maxAgents
 		$pointer = DllStructGetData($agentPtrBuffer, 1, $i)
 		If $pointer == 0 Then ContinueLoop
 
 		Local $struct = SafeDllStructCreate($AGENT_STRUCT_TEMPLATE)
-		SafeDllCall13($kernel_handle, "bool", "ReadProcessMemory", "handle", $processHandle, "ptr", $pointer, "struct*", DllStructGetPtr($struct), "ulong_ptr", DllStructGetSize($struct), "ulong_ptr*", 0)
-		
+		SafeDllCall13($kernel_handle, 'bool', 'ReadProcessMemory', 'handle', $processHandle, 'ptr', $pointer, 'struct*', DllStructGetPtr($struct), 'ulong_ptr', DllStructGetSize($struct), 'ulong_ptr*', 0)
+
 		If DllStructGetData($struct, 'Type') <> 0 And DllStructGetData($struct, 'Type') <> $type Then ContinueLoop
 		$agentArray[$count] = $struct
 		$count += 1
@@ -1025,7 +1046,7 @@ EndFunc
 ;~ Adds a hero to the party.
 Func AddHero($heroID)
 	SendPacket(0x8, $HEADER_HERO_ADD, $heroID)
-	Sleep(100)
+	PingSleep(100)
 EndFunc
 
 
@@ -1121,7 +1142,7 @@ Func ToggleHeroSkillSlot($heroIndex, $skillSlot)
 EndFunc
 
 
-;~ Returns number of heroes you control.
+;~ Returns number of heroes from both you and other players
 Func GetHeroCount()
 	Local $offset[] = [0, 0x18, 0x4C, 0x54, 0x2C]
 	Local $heroCount = MemoryReadPtr(GetProcessHandle(), $base_address_ptr, $offset)
@@ -1129,7 +1150,7 @@ Func GetHeroCount()
 EndFunc
 
 
-;~ Returns agent ID of a hero.
+;~ Returns agent ID of a hero - this is only valid in a group with a single player, for more, it can fail
 Func GetHeroID($heroIndex)
 	If $heroIndex == 0 Then Return GetMyID()
 	Local $offset[] = [0, 0x18, 0x4C, 0x54, 0x24, 0x18 * ($heroIndex - 1)]
@@ -1463,14 +1484,14 @@ Func StartSalvageWithKit($item, $salvageKit)
 	Local $offset[] = [0, 0x18, 0x2C, 0x690]
 	Local $salvageSessionID = MemoryReadPtr(GetProcessHandle(), $base_address_ptr, $offset)
 	If $salvageSessionID[0] == 0 Then Return False
-	Sleep(40 + GetPing())
+	PingSleep(50)
 	Local $itemID = DllStructGetData($item, 'ID')
 	DllStructSetData($SALVAGE_STRUCT, 2, $itemID)
 	DllStructSetData($SALVAGE_STRUCT, 3, DllStructGetData($salvageKit, 'ID'))
 	DllStructSetData($SALVAGE_STRUCT, 4, $salvageSessionID[1])
 	;Enqueue($SALVAGE_STRUCT_PTR, 16)
 	While Not SafeEnqueue($SALVAGE_STRUCT_PTR, 16)
-		Sleep(250 + GetPing())
+		PingSleep(250)
 	WEnd
 	Return True
 EndFunc
@@ -1479,7 +1500,7 @@ EndFunc
 ;~ Does not work - Should validate salvage
 Func ValidateSalvage()
 	ControlSend(GetWindowHandle(), '', '', '{Enter}')
-	Sleep(1000 + GetPing())
+	PingSleep(1000)
 EndFunc
 
 
@@ -1518,7 +1539,7 @@ Func IdentifyItem($item)
 	SendPacket(0xC, $HEADER_ITEM_IDENTIFY, DllStructGetData($identificationKit, 'ID'), $itemID)
 	Local $deadlock = TimerInit()
 	While TimerDiff($deadlock) < 5000
-		Sleep(20)
+		Sleep(50)
 		; Refetch item by ID to get updated identified status
 		If IsIdentified(GetItemByItemID($itemID)) Then Return True
 	WEnd
@@ -1737,7 +1758,7 @@ Func TraderRequest($modelID, $dyeColor = -1)
 	Local $deadlock = TimerInit()
 	$found = False
 	While Not $found And TimerDiff($deadlock) < 5000
-		Sleep(20)
+		Sleep(50)
 		$found = MemoryRead($processHandle, $trader_quote_ID) <> $quoteID
 	WEnd
 	Return $found
@@ -1774,7 +1795,7 @@ Func SellItemToTrader($item, $quantity = 0)
 		Local $timer = TimerInit()
 		While $costID <> $itemID
 			$costID = MemoryRead($processHandle, $trader_cost_ID)
-			Sleep(20 + GetPing())
+			PingSleep(50)
 			If TimerDiff($timer) > 2000 Then
 				Warn('Trader quote timeout for item ' & DllStructGetData($item, 'ModelID'))
 				Return False
@@ -1784,7 +1805,7 @@ Func SellItemToTrader($item, $quantity = 0)
 		Local $costValue = MemoryRead($processHandle, $trader_cost_value)
 		Enqueue($TRADER_SELL_STRUCT_PTR, 4)
 		; Wait a bit for transaction to complete
-		Sleep(20 + GetPing())
+		PingSleep(50)
 	Next
 	Return True
 EndFunc
@@ -2430,9 +2451,9 @@ Func WriteChat($message, $sender = '[Bhub]', $channel = 6)
 	; CommandUIMsg struct: [fn ptr][kWriteToChatLog][channel][msg ptr][channel]
 	Local $s = DllStructCreate('dword;dword;dword;dword;dword')
 	DllStructSetData($s, 1, GetLabel('CommandUIMsg'))
-	DllStructSetData($s, 2, 0x1000007F)   ; kWriteToChatLog
+	DllStructSetData($s, 2, 0x1000007F)		; kWriteToChatLog
 	DllStructSetData($s, 3, $channel)
-	DllStructSetData($s, 4, $msgGWAddr)   ; GW1-side pointer to encoded message
+	DllStructSetData($s, 4, $msgGWAddr)		; GW1-side pointer to encoded message
 	DllStructSetData($s, 5, $channel)
 	SafeDllCall13($kernel_handle, 'int', 'WriteProcessMemory', 'int', $processHandle, 'int', $address, 'ptr', DllStructGetPtr($s), 'int', DllStructGetSize($s), 'int', 0)
 EndFunc
@@ -2613,12 +2634,11 @@ Func LoadAttributes($attributesArray, $secondaryProfession, $heroIndex = 0)
 	EndIf
 
 	$deadlock = TimerInit()
-	Local $ping = GetPing()
 	; Setting up secondary profession
 	If GetHeroProfession($heroIndex) <> $secondaryProfession Then
 		While GetHeroProfession($heroIndex, True) <> $secondaryProfession And TimerDiff($deadlock) < 8000
 			ChangeSecondProfession($attributesArray[0][0], $heroIndex)
-			Sleep(20 + $ping)
+			PingSleep(50)
 		WEnd
 	EndIf
 
@@ -2636,15 +2656,15 @@ Func LoadAttributes($attributesArray, $secondaryProfession, $heroIndex = 0)
 	For $i = 1 To $attributesArray[0][1]
 		For $j = 1 To $attributesArray[$i][1]
 			IncreaseAttribute($attributesArray[$i][0], $heroIndex)
-			Sleep(50 + $ping)
+			PingSleep(50)
 		Next
 	Next
-	Sleep(50 + $ping)
+	PingSleep(50)
 
 	; If there are any points left, we put them in the primary attribute
 	For $i = 0 To 11
 		IncreaseAttribute($primaryAttribute, $heroIndex)
-		Sleep(50 + $ping)
+		PingSleep(50)
 	Next
 EndFunc
 
@@ -2678,18 +2698,17 @@ EndFunc
 
 ;~ Set all attributes of the character/hero to 0
 Func EmptyAttributes($secondaryProfession, $heroIndex = 0)
-	Local $ping = GetPing()
 	For $attribute In $ATTRIBUTES_BY_PROFESSION_MAP[GetHeroProfession($heroIndex)]
 		For $i = 0 To 11
 			DecreaseAttribute($attribute, $heroIndex)
-			Sleep(10 + $ping)
+			PingSleep(50)
 		Next
 	Next
 
 	For $attribute In $ATTRIBUTES_BY_PROFESSION_MAP[$secondaryProfession]
 		For $i = 0 To 11
 			DecreaseAttribute($attribute, $heroIndex)
-			Sleep(10 + $ping)
+			PingSleep(50)
 		Next
 	Next
 EndFunc
@@ -2706,7 +2725,7 @@ Func ClearAttributes($heroIndex = 0)
 			While $attribute <> 0 And TimerDiff($deadlock) < 5000
 				$deadlock = TimerInit()
 				DecreaseAttribute($attributeID, $heroIndex)
-				Sleep(100)
+				Sleep(250)
 				$attribute = GetAttributeByID($attributeID, False, $heroIndex)
 			WEnd
 		EndIf
@@ -2775,7 +2794,7 @@ Func DecodeEncStringAsync($ptr, $timeout = 1000)
 			Local $decoded = MemoryRead($processHandle, $decode_output_ptr, 'wchar[1024]')
 			Return $decoded
 		EndIf
-		Sleep(16)
+		Sleep(50)
 	WEnd
 
 	; Timeout
@@ -2912,7 +2931,7 @@ Func Disconnected($maxRetries = 3, $retryDelay = 60000)
 			EnableRendering()
 			Exit 1
 		EndIf
-		Sleep(20)
+		Sleep(50)
 		$check = GetMapType() <> $ID_LOADING And GetAgentExists(GetMyID())
 	WEnd
 	Notice('Reconnected!')

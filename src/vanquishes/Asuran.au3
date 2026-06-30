@@ -16,14 +16,12 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
 #include '../../lib/GWA2_ID.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
-
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
 Global Const $ASURAN_FARM_INFORMATIONS = 'Asuran title farm, bring solid heroes composition'
@@ -174,7 +172,7 @@ Func VanquishMagusStones()
 	RandomSleep(1000)
 
 	If IsHardmodeEnabled() Then UseConset()
-
+	UseSummoningStone()
 	For $i = 0 To 8
 		If MoveAggroAndKillInRange($foes[$i][0], $foes[$i][1], $foes[$i][2]) == $FAIL Then Return $FAIL
 	Next

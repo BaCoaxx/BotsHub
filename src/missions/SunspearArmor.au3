@@ -16,15 +16,13 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
+#include '../../lib/GWA2_ID_Maps.au3'
 #include '../../lib/GWA2.au3'
-#include '../../lib/GWA2_ID.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
 
-
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
 Global Const $SUNSPEAR_ARMOR_FARM_INFORMATIONS = 'Sunspear armor farm with 7heroes GWReborn s comp'
@@ -85,7 +83,7 @@ Func SunspearArmorClean()
 	RandomSleep(62000)
 
 	If IsHardmodeEnabled() Then UseConset()
-
+	UseSummoningStone()
 	; 23 groups to vanquish + 10 movements
 	Local Static $foes[][] = [ _
 		[22595,		-484,	'Moving and aggroing'		], _

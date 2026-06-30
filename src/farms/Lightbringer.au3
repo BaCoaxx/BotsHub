@@ -16,15 +16,14 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
 #include '../../lib/GWA2_ID.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
 
-
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
 Global Const $LIGHTBRINGER_FARM_INFORMATIONS = 'Lightbringer title farm'
@@ -86,6 +85,7 @@ Func FarmMirrorOfLyss()
 	RandomSleep(1000)
 
 	If IsHardmodeEnabled() Then UseConset()
+	UseSummoningStone()
 
 	MoveAggroAndKill(-13760, -13924, 'Path 1')
 	MoveAggroAndKill(-10600, -12671, 'Path 2')

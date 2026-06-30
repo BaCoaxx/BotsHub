@@ -16,14 +16,15 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2.au3'
+#include '../../lib/GWA2_ID_Items.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
 #include '../../lib/GWA2_ID.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
 
-Opt('MustDeclareVars', True)
 
 ; ==== Constants ====
 Global Const $VOLTAIC_FARM_INFORMATIONS = 'For best results, have :' & @CRLF _
@@ -80,7 +81,7 @@ EndFunc
 Func VoltaicFarmLoop()
 	If GetMapID() <> $ID_VERDANT_CASCADES Then Return $FAIL
 	ResetFailuresCounter()
-
+	UseSummoningStone()
 	MoveAggroAndKillInRange(-19887, 6074, '1', $VS_AGGRO_RANGE)
 	Info('Making way to Slavers')
 	MoveAggroAndKillInRange(-10273, 3251, '2', $VS_AGGRO_RANGE)
@@ -119,10 +120,10 @@ Func VoltaicFarmLoop()
 	If IsHardmodeEnabled() Then UseConset()
 
 	Sleep(1000)
-	While Not IsRunFailed() And Not IsAgentInRange(GetMyAgent(), -18500, -8000, 1250)
+	While Not IsRunFailed() And Not IsAgentInRange(GetMyAgent(), -18500, -8000, $RANGE_LONGBOW)
 		WaitUntilPartyAlive()
 		UseMoraleConsumableIfNeeded()
-		UseConsumable($ID_LEGIONNAIRE_SUMMONING_CRYSTAL)
+		UseSummoningStone()
 		MoveAggroAndKillInRange(-13500, -15750, 'In front of the door', $VS_AGGRO_RANGE)
 		MoveAggroAndKillInRange(-12500, -15000, 'Before the bridge', $VS_AGGRO_RANGE)
 		MoveAggroAndKillInRange(-10400, -14800, 'After the bridge', $VS_AGGRO_RANGE)
@@ -134,10 +135,10 @@ Func VoltaicFarmLoop()
 		MoveAggroAndKillInRange(-16500, -8000, 'Fifth group', $VS_AGGRO_RANGE)
 		MoveAggroAndKillInRange(-18800, -7850, 'To the shrine', $VS_AGGRO_RANGE)
 	WEnd
-	While Not IsRunFailed() And Not IsAgentInRange(GetMyAgent(), -17500, -14250, 1250)
+	While Not IsRunFailed() And Not IsAgentInRange(GetMyAgent(), -17500, -14250, $RANGE_LONGBOW)
 		WaitUntilPartyAlive()
 		UseMoraleConsumableIfNeeded()
-		UseConsumable($ID_LEGIONNAIRE_SUMMONING_CRYSTAL)
+		UseSummoningStone()
 		MoveAggroAndKillInRange(-18500, -11500, 'Pre-Boss group', $VS_AGGRO_RANGE)
 		MoveAggroAndKillInRange(-17700, -12500, 'Boss group', $VS_AGGRO_RANGE)
 		MoveAggroAndKillInRange(-17500, -14250, 'Final group', $VS_AGGRO_RANGE)
@@ -146,7 +147,7 @@ Func VoltaicFarmLoop()
 	Info('Opening chest')
 	; Tripled to secure looting of chest
 	For $i = 0 To 2
-		Move(-17500, -14250, 600)
+		MoveRadial(-17500, -14250, 600)
 		Sleep(5000)
 		TargetNearestItem()
 		ActionInteract()

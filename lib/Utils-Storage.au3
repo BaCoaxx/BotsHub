@@ -16,17 +16,20 @@
 #CE ===========================================================================
 
 #include-once
-
 #include 'SQLite.au3'
 #include 'SQLite.dll.au3'
+#include 'GWA2.au3'
+#include 'GWA2_Assembly.au3'
 #include 'GWA2_Headers.au3'
 #include 'GWA2_ID.au3'
-#include 'GWA2.au3'
+#include 'GWA2_ID_Items.au3'
+#include 'GWA2_ID_Maps.au3'
+#include 'GWA2_ID_Skills.au3'
 #include 'Utils.au3'
+#include 'Utils-Agents.au3'
+#include 'Utils-Console.au3'
 #include 'Utils-Items_Modstructs.au3'
-#include 'Utils-Debugger.au3'
-
-Opt('MustDeclareVars', True)
+#include 'Utils-Storage.au3'
 
 
 #Region Inventory Management
@@ -398,6 +401,8 @@ Func DefaultShouldPickItem($item)
 		Return False
 	ElseIf IsMapPiece($itemID) Then
 		Return $cache['Pick up items.Quest items.Map pieces']
+	ElseIf IsMiniature($item) Then
+		Return True
 	; ----------------------------------- Other stackables -----------------------------------
 	ElseIf IsStackable($item) Then
 		Return True
@@ -434,7 +439,7 @@ Func DefaultShouldSalvageItem($item)
 			Local $shouldSalvage = $cache['Salvage items.Trophies.' & $FARMED_TROPHIES_NAMES_FROM_ID[$itemID]]
 			Return $shouldSalvage == Null ? False : $shouldSalvage
 		EndIf
-		; Don't salvage Nick items and items that salvage into rare materials
+		; Do not salvage Nick items and items that salvage into rare materials
 		If $MAP_NICHOLAS_ITEMS[$itemID] <> Null Then Return False
 		; - FIXME: salvage once we can salvage with higher salvage kit
 		If $MAP_RARE_MATERIALS_TROPHIES[$itemID] <> Null Then Return False
@@ -476,7 +481,7 @@ Func DefaultShouldSellItem($item)
 		If $cache['@sell.salvageables.nothing'] Then Return False
 		Local $rarityName = $RARITY_NAMES_FROM_IDS[$rarity]
 		If Not $cache['Sell items.Armor salvageables.' & $rarityName] Then Return False
-		Return IsIdentified($item) And Not ContainsValuableUpgrades($item)
+		Return $rarity == $RARITY_WHITE Or (IsIdentified($item) And Not ContainsValuableUpgrades($item))
 	; --------------------------------------- Trophies ---------------------------------------
 	ElseIf IsTrophy($itemID) Then
 		If $MAP_FARMED_TROPHIES[$itemID] <> Null Then
@@ -491,7 +496,7 @@ Func DefaultShouldSellItem($item)
 		If $MAP_DUST_TROPHIES[$itemID] <> Null Then Return False
 		If $MAP_BONES_TROPHIES[$itemID] <> Null Then Return False
 		If $MAP_FIBER_TROPHIES[$itemID] <> Null Then Return False
-		; Sell the rest - FIXME: disabled until we have all IDs
+		; Sell the rest
 		Return True
 	; --------------------------------------- Scrolls ---------------------------------------
 	ElseIf IsBlueScroll($itemID) Then
@@ -542,11 +547,9 @@ Func DefaultShouldStoreItem($item)
 		Return True
 	; -------------------------------------- Materials --------------------------------------
 	ElseIf IsBasicMaterial($item) Then
-		If $quantity <> 250 Then Return False
 		Local $materialName = $BASIC_MATERIAL_NAMES_FROM_IDS[$itemID]
 		Return $cache['Store items.Basic Materials.' & $materialName]
 	ElseIf IsRareMaterial($item) Then
-		If $quantity <> 250 Then Return False
 		Local $materialName = $RARE_MATERIAL_NAMES_FROM_IDS[$itemID]
 		Return $cache['Store items.Rare Materials.' & $materialName]
 	; ----------------------------------------- Tomes -----------------------------------------
@@ -1303,12 +1306,12 @@ EndFunc
 Func SalvageItem($item, $salvageKit, $salvageType = 'Materials')
 	Local $rarity = GetRarity($item)
 	While Not StartSalvageWithKit($item, $salvageKit)
-		Sleep(GetPing())
+		PingSleep(50)
 	WEnd
-	Sleep(600 + GetPing())
+	PingSleep(600)
 	If $rarity == $RARITY_gold Or $rarity == $RARITY_purple Then
 		ValidateSalvage()
-		Sleep(600 + GetPing())
+		PingSleep(600)
 	EndIf
 	Switch $salvageType
 		Case 'Materials'
@@ -1322,7 +1325,7 @@ Func SalvageItem($item, $salvageKit, $salvageType = 'Materials')
 		Case Else
 			Return False
 	EndSwitch
-	Sleep(40 + GetPing())
+	PingSleep(50)
 	Return True
 EndFunc
 #EndRegion Salvage
@@ -1431,7 +1434,7 @@ Func StoreItemInXunlaiStorage($item)
 		Local $materialInStorage = GetItemBySlot(6, $materialStorageLocation)
 		Local $countMaterial = DllStructGetData($materialInStorage, 'Equipped') * 256 + DllStructGetData($materialInStorage, 'Quantity')
 		MoveItem($item, 6, $materialStorageLocation)
-		Sleep(20 + GetPing())
+		PingSleep(50)
 		$materialInStorage = GetItemBySlot(6, $materialStorageLocation)
 		Local $newCountMaterial = DllStructGetData($materialInStorage, 'Equipped') * 256 + DllStructGetData($materialInStorage, 'Quantity')
 		If $newCountMaterial - $countMaterial == $amount Then Return True
@@ -1439,14 +1442,13 @@ Func StoreItemInXunlaiStorage($item)
 	EndIf
 	If (IsStackable($item) Or IsMaterial($item)) And $amount < 250 Then
 		$existingStacks = FindAllInXunlaiStorage($item)
-		Local $ping = GetPing()
 		For $bagIndex = 0 To UBound($existingStacks) - 1 Step 2
 			Local $existingStack = GetItemBySlot($existingStacks[$bagIndex], $existingStacks[$bagIndex + 1])
 			Local $existingAmount = DllStructGetData($existingStack, 'Quantity')
 			If $existingAmount < 250 Then
 				Debug('To ' & $existingStacks[$bagIndex] & ':' & $existingStacks[$bagIndex + 1])
 				MoveItem($item, $existingStacks[$bagIndex], $existingStacks[$bagIndex + 1])
-				Sleep(20 + $ping)
+				PingSleep(50)
 				$amount = $amount + $existingAmount - 250
 				If $amount <= 0 Then Return True
 			EndIf
@@ -1459,7 +1461,7 @@ Func StoreItemInXunlaiStorage($item)
 	EndIf
 	Debug('To ' & $storageSlot[0] & ':' & $storageSlot[1])
 	MoveItem($item, $storageSlot[0], $storageSlot[1])
-	Sleep(20)
+	PingSleep(50)
 	Return True
 EndFunc
 
@@ -1597,7 +1599,7 @@ Func PickUpItems($defendFunction = Null, $shouldPickItem = DefaultShouldPickItem
 			PickUpItem($item)
 			$deadlock = TimerInit()
 			While IsPLayerAlive() And GetAgentExists($agentID) And TimerDiff($deadlock) < 10000
-				RandomSleep(100)
+				PingSleep(100)
 			WEnd
 		EndIf
 	Next
@@ -1864,6 +1866,14 @@ Func FindInXunlaiStorage($itemID)
 EndFunc
 
 
+;~ Look for an item in xunlai storage
+Func FindInInventoryOrXunlaiStorage($itemID)
+	Local $result = FindInInventory($itemID)
+	If $result[0] <> 0 Then Return $result
+	Return FindInXunlaiStorage($itemID)
+EndFunc
+
+
 ;~ Look for an item in storages from firstBag to lastBag and return bag and slot of the item, [0, 0] else (bags and slots are indexed from 1 as in GWToolbox)
 Func FindInStorages($firstBag, $lastBag, $itemID)
 	Local $item
@@ -1966,19 +1976,32 @@ EndFunc
 
 #Region Use Items
 ;~ Use morale booster on team
-Func UseMoraleConsumableIfNeeded()
-	While TeamHasTooMuchMalus()
+Func UseMoraleConsumableIfNeeded($forceUse = False)
+	If (Not $forceUse And Not $run_options_cache['run.consume_consumables']) Then Return $FAIL
+	; Team member with malus is obtained from last member to first, to remove malus from character last
+	Local $teamMemberWithMalus = GetTeamMemberWithTooMuchMalus()
+	While $teamMemberWithMalus >= 0
 		Local $usedMoraleBooster = False
-		For $DPRemoval_Sweet In $DP_REMOVAL_SWEETS
-			Local $consumableSlot = FindInInventory($DPRemoval_Sweet)
-			If $consumableSlot[0] <> 0 Then
-				UseItemBySlot($consumableSlot[0], $consumableSlot[1])
-				$usedMoraleBooster = True
-			EndIf
-		Next
+		; Using solo morale booster first to keep team wide boosters for heroes
+		If $teamMemberWithMalus == 0 Then $usedMoraleBooster = UseFirstAvailableConsumable($SOLO_DP_REMOVAL)
+		If Not $usedMoraleBooster Then $usedMoraleBooster = UseFirstAvailableConsumable($TEAM_DP_REMOVAL)
 		If Not $usedMoraleBooster Then Return $FAIL
+		$teamMemberWithMalus = GetTeamMemberWithTooMuchMalus()
 	WEnd
 	Return $SUCCESS
+EndFunc
+
+
+;~ Use first item from given consumables list found in inventory
+Func UseFirstAvailableConsumable($consumables)
+	For $consumable In $consumables
+		Local $slot = FindInInventory($consumable)
+		If $slot[0] <> 0 Then
+			UseItemBySlot($slot[0], $slot[1])
+			Return True
+		EndIf
+	Next
+	Return False
 EndFunc
 
 
@@ -1991,16 +2014,36 @@ Func UseConset($forceUse = False)
 EndFunc
 
 
-;~ Uses a consumable from inventory, if present
+;~ Use a summoning stone
+Func UseSummoningStone($forceUse = False, $preferredSummon = Null)
+	If (Not $forceUse And Not $run_options_cache['run.consume_consumables']) Then Return False
+	If GetEffectTimeRemaining(GetEffect($ID_SUMMONING_SICKNESS)) > 0 Then Return False
+	If $preferredSummon <> Null Then
+		If UseConsumable($preferredSummon) Then Return True
+	EndIf
+
+	Local $itemCounts = CountTheseItems($SUMMONING_STONES_ARRAY)
+	For $i = 0 To UBound($SUMMONING_STONES_ARRAY) - 1
+		; Skipping merchant
+		If $SUMMONING_STONES_ARRAY[$i] == $ID_MERCHANT_SUMMON Then ContinueLoop
+		If $itemCounts[$i] > 0 Then
+			If UseConsumable($SUMMONING_STONES_ARRAY[$i]) == $SUCCESS Then Return True
+		EndIf
+	Next
+	Return False
+EndFunc
+
+
+;~ Uses a consumable from inventory or xunlai, if present
 Func UseCitySpeedBoost($forceUse = False)
 	If (Not $forceUse And Not $run_options_cache['run.consume_consumables']) Then Return $FAIL
 	If GetMapType() <> $ID_OUTPOST Then Return $FAIL
 	If GetEffectTimeRemaining(GetEffect($ID_SUGAR_JOLT_SHORT)) > 0 Or GetEffectTimeRemaining(GetEffect($ID_SUGAR_JOLT_LONG)) > 0 Then Return $SUCCESS
-	Local $consumableSlot = FindInInventory($ID_SUGARY_BLUE_DRINK)
+	Local $consumableSlot = FindInInventoryOrXunlaiStorage($ID_SUGARY_BLUE_DRINK)
 	If $consumableSlot[0] <> 0 Then
 		UseItemBySlot($consumableSlot[0], $consumableSlot[1])
 	Else
-		$consumableSlot = FindInInventory($ID_CHOCOLATE_BUNNY)
+		$consumableSlot = FindInInventoryOrXunlaiStorage($ID_CHOCOLATE_BUNNY)
 		If $consumableSlot[0] <> 0 Then UseItemBySlot($consumableSlot[0], $consumableSlot[1])
 	EndIf
 	Return $SUCCESS
@@ -2035,7 +2078,7 @@ Func UseConsumable($consumableID, $forceUse = False, $checkXunlaiChest = True)
 		Return $FAIL
 	EndIf
 	Local $result = UseItemFromInventory($consumableID, $forceUse, $checkXunlaiChest)
-	If $result == $SUCCESS Then Info('Consumable used successfully')
+	If $result == $SUCCESS Then Info('Consumable ' & $consumableID & ' used successfully')
 	If $result == $FAIL Then Warn('Could not find specified consumable in inventory')
 	Return $result
 EndFunc
@@ -2199,6 +2242,24 @@ Func IsSpecialDrop($itemID)
 EndFunc
 
 
+;~ Return true if the item is a miniature
+Func IsMiniature($item)
+	Return DllStructGetData($item, 'Type') == 34
+EndFunc
+
+
+;~ Return true if the item is a consumable of any kind
+Func IsConsumableBis($item)
+	Return DllStructGetData($item, 'Type') == 9
+EndFunc
+
+
+;~ Return true if the item is a trophy (polymock piece included)
+Func IsTrophyBis($itemID)
+	Return DllStructGetData($item, 'Type') == 30
+EndFunc
+
+
 ;~ Return true if the item is a summoning stone
 Func IsSummoningStone($itemID)
 	Return $MAP_SUMMONING_STONES[$itemID] <> Null
@@ -2350,7 +2411,7 @@ Func ReadAllItemsData()
 			$output = GetOneItemData($bagIndex, $slot)
 			If $output == '' Then ContinueLoop
 			Info($output)
-			RandomSleep(50)
+			RandomSleep(250)
 		Next
 	Next
 EndFunc
@@ -2478,7 +2539,7 @@ Func FillTable($table, Const ByRef $isNumber, Const ByRef $values)
 	Local $query = 'INSERT INTO ' & $table & ' VALUES '
 	For $i = 0 To UBound($values) - 1
 		$query &= '('
-		For $j = 0 To UBound($values,2) - 1
+		For $j = 0 To UBound($values, 2) - 1
 			If $isNumber[$j] Then
 				$query &= $values[$i][$j] & ', '
 			Else
@@ -2568,7 +2629,7 @@ Func StoreAllItemsData()
 			$insertQuery &= DllStructGetData($item, 'DyeColor') & ', '
 			$insertQuery &= DllStructGetData($item, 'ID')
 			$insertQuery &= '),' & @CRLF
-			Sleep(20)
+			Sleep(50)
 		Next
 	Next
 

@@ -16,13 +16,19 @@
 #CE ===========================================================================
 
 #include-once
-
-#include '../../lib/GWA2.au3'
-#include '../../lib/GWA2_ID.au3'
-#include '../../lib/Utils.au3'
 #include <File.au3>
 
-Opt('MustDeclareVars', True)
+#include '../../lib/GWA2_Assembly.au3'
+#include '../../lib/GWA2_ID_Items.au3'
+#include '../../lib/GWA2_ID_Maps.au3'
+#include '../../lib/GWA2_ID_Skills.au3'
+#include '../../lib/GWA2_ID.au3'
+#include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
+#include '../../lib/Utils.au3'
+
 
 ; ==== Constants ====
 Global Const $DW_COMMENDATIONS_FARMER_SKILLBAR = 'OgGlQlVp6smsJRg19RTKexTkL2XsDC'
@@ -427,7 +433,7 @@ EndFunc
 
 ;~ The soul twisting ritualist uses soul twisting - sic
 Func SoulTwistingRitualistUseSoulTwisting()
-	If GetEffectTimeRemaining(GetEffect($SOUL_TWISTING_SKILL_POSITION, $HERO_RITUALIST_PROT)) == 0 Then
+	If GetEffectTimeRemaining(GetEffect($SOUL_TWISTING_SKILL_POSITION, GetHeroID($HERO_RITUALIST_PROT))) == 0 Then
 		UseHeroSkill($HERO_RITUALIST_PROT, $SOUL_TWISTING_SKILL_POSITION)
 		RandomSleep(50)
 	EndIf
@@ -461,7 +467,6 @@ Func WaitForPurityBall()
 
 	LogIntoFile('Initial foes count - ' & CountFoesOnTopOfTheStairs())
 
-	Local $ping = GetPing()
 	While IsPlayerAlive() And TimerDiff($deadlock) < 75000 And (Not IsFurthestMobInBall() Or GetSkillbarSkillAdrenaline($SKILL_WHIRLWIND_ATTACK) < 130)
 		If ($foesCount > 3 And IsRecharged($SKILL_TO_THE_LIMIT) And GetSkillbarSkillAdrenaline($SKILL_WHIRLWIND_ATTACK) < 130) Then
 			UseSkillEx($SKILL_TO_THE_LIMIT)
@@ -475,20 +480,20 @@ Func WaitForPurityBall()
 		EndIf
 		If IsRecharged($SKILL_CONVICTION) And GetEffectTimeRemaining(GetEffect($ID_CONVICTION)) == 0 Then
 			UseSkillEx($SKILL_CONVICTION)
-			Sleep(100 + $ping)
+			PingSleep(100)
 
 			If IsRecharged($SKILL_VITAL_BOON) Then
 				UseSkillEx($SKILL_VITAL_BOON)
-				Sleep(20 + $ping)
+				PingSleep(50)
 			EndIf
 		EndIf
 		;If IsRecharged($SKILL_MYSTIC_REGENERATION) And GetEffectTimeRemaining(GetEffect($ID_MYSTIC_REGENERATION)) == 0 Then
 		;	UseSkillEx($SKILL_MYSTIC_REGENERATION)
-		;	Sleep(20 + $ping)
+		;	PingSleep(50)
 		;EndIf
 		If DllStructGetData(GetMyAgent(), 'HealthPercent') < 0.60 And IsRecharged($SKILL_VITAL_BOON) And GetEffectTimeRemaining(GetEffect($ID_VITAL_BOON)) == 0 Then
 			UseSkillEx($SKILL_VITAL_BOON)
-			Sleep(20 + $ping)
+			PingSleep(50)
 		EndIf
 
 		If DllStructGetData(GetMyAgent(), 'HealthPercent') < 0.45 And IsRecharged($SKILL_GRENTHS_AURA) Then
@@ -646,10 +651,10 @@ Func HealWhilePickingItems()
 		EndIf
 		If DllStructGetData(GetMyAgent(), 'HealthPercent') < 0.60 And IsRecharged($SKILL_VITAL_BOON) And GetEffectTimeRemaining(GetEffect($ID_VITAL_BOON)) == 0 Then
 			UseSkillEx($SKILL_VITAL_BOON)
-			Sleep(20 + GetPing())
+			PingSleep(50)
 		;If IsRecharged($SKILL_MYSTIC_REGENERATION) And GetEffectTimeRemaining(GetEffect($ID_MYSTIC_REGENERATION)) == 0 Then
 		;	UseSkillEx($SKILL_MYSTIC_REGENERATION)
-		;	Sleep(20 + GetPing())
+		;	PingSleep(50)
 		EndIf
 		; Heroes with Mystic Healing provide additional long range support
 		UseHeroSkill($HERO_MESMER_DPS_2, $ESURGE2_MYSTIC_HEALING_SKILL_POSITION)

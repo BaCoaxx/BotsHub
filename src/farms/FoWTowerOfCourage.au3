@@ -24,14 +24,13 @@ https://gwpvx.fandom.com/wiki/Build:R/A_Whirling_Defense_Farmer
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
-
-#include '../../lib/GWA2_Headers.au3'
+#include '../../lib/GWA2_ID_Skills.au3'
+#include '../../lib/GWA2_ID.au3'
 #include '../../lib/GWA2.au3'
+#include '../../lib/Utils-Agents.au3'
+#include '../../lib/Utils-Console.au3'
+#include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
-
-Opt('MustDeclareVars', True)
 
 
 #Region Configuration
@@ -87,13 +86,11 @@ Global Const $FOW_TOC_FARM_INFORMATIONS = 'For best results, have :' & @CRLF _
 Global Const $FOW_TOC_FARM_DURATION = 3 * 60 * 1000
 Global Const $MAX_FOW_TOC_FARM_DURATION = 6 * 60 * 1000
 
-Global $fow_toc_move_options = CloneDictMap($default_move_defend_options)
-$fow_toc_move_options.Item('defendFunction')		= CastFowToCBuffs
-$fow_toc_move_options.Item('moveTimeOut')			= 5 * 60 * 1000
-$fow_toc_move_options.Item('randomFactor')			= 25
-$fow_toc_move_options.Item('hosSkillSlot')			= $FOW_TOC_HEART_OF_SHADOW
-$fow_toc_move_options.Item('deathChargeSkillSlot')	= $FOW_TOC_DEATH_CHARGE
-$fow_toc_move_options.Item('openChests')			= False
+Global $fow_toc_move_options					= CloneMap($default_move_defend_options)
+$fow_toc_move_options['defendFunction']			= CastFowToCBuffs
+$fow_toc_move_options['randomFactor']			= 25
+$fow_toc_move_options['hosSkillSlot']			= $FOW_TOC_HEART_OF_SHADOW
+$fow_toc_move_options['deathChargeSkillSlot']	= $FOW_TOC_DEATH_CHARGE
 
 ;Global Const $FOW_TOC_MODELID_SHADOW_MESMER	= 2855
 ;Global Const $FOW_TOC_MODELID_SHADOW_ELEMENTAL	= 2856
@@ -201,7 +198,7 @@ Func FoWToCFarmLoop()
 		If TimerDiff($killTimer) > 30000 Then ExitLoop
 		$foesCount = CountFoesInRangeOfAgent(GetMyAgent(), $RANGE_EARSHOT, IsAbyssal)
 	WEnd
-	Sleep(500 + GetPing())
+	Sleep(500)
 	Info('Abyssals cleared. Picking up loot')
 	If IsPlayerAlive() Then PickUpItems(CastFowToCBuffs)
 	RandomSleep(500)
@@ -219,7 +216,7 @@ Func FoWToCFarmLoop()
 	Info('Killing rangers')
 	; Longest bow range is around 1500
 	Local $target = GetFurthestNPCInRangeOfCoords($ID_ALLEGIANCE_FOE, Null, Null, $RANGE_SPELLCAST + 500)
-	Local $center = FindMiddleOfFoes(DllStructGetData($target, 'X'), DllStructGetData($target, 'Y'), 2 * $RANGE_EARSHOT)
+	Local $center = FindMiddleOfFoes(DllStructGetData($target, 'X'), DllStructGetData($target, 'Y'), $RANGE_EARSHOT)
 	CastFowToCBuffs()
 	GetAlmostInRangeOfAgent($target)
 	CastFowToCBuffs()
@@ -253,7 +250,7 @@ Func FoWToCFarmLoop()
 		$foesCount = CountFoesInRangeOfAgent(GetMyAgent(), $RANGE_EARSHOT)
 	WEnd
 	Info('Rangers cleared. Picking up loot')
-	Sleep(500 + GetPing())
+	Sleep(500)
 	PickUpItems(CastFowToCBuffs)
 	Return $SUCCESS
 EndFunc

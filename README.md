@@ -64,7 +64,9 @@ To use it:
 | Area							| Title / Points						|
 | ----------------------------- | ------------------------------------- |
 | Ferndale						| Kurzick								|
+| Drazach						| Kurzick								|
 | Mount Qinkai					| Luxon									|
+| Silent Surf					| Luxon									|
 | Sulfurous Wastes				| Sunspear, Lightbringer				|
 | Mirror of Lyss				| Lightbringer							|
 | Magus Stones					| Asura									|
@@ -75,18 +77,20 @@ To use it:
 
 ### Dungeons / Elite Zones
 
-| Area							| Drops												|
-| ----------------------------- | ------------------------------------------------- |
-| Bogroot						| Froggy											|
-| Sepulchre of Dragrimmar (SoO)	| Dragon Bone Staff									|
-| Slaver’s Exile				| Voltaic Spears									|
-| FoW							| Obsidian Shards, Obsidian Edge, Shadow weapons	|
-| FoW – Tower of Courage		| Obsidian Shards, dust								|
-| Domain of Anguish				| Gemstones											|
-| City of Torc'qua				| Margonite Gemstones								|
-| Ravenheart Gloom				| Torment Gemstones									|
-| Stygian Veil					| Stygian Gemstones									|
-| Underworld					| Globs of Ectoplasm								|
+| Area							| Drops																	|
+| ----------------------------- | --------------------------------------------------------------------- |
+| Bogroot						| Froggy																|
+| Sepulchre of Dragrimmar (SoO)	| Dragon Bone Staff														|
+| Slaver’s Exile				| Voltaic Spears														|
+| FoW							| Obsidian Shards, Obsidian Edge, Shadow weapons						|
+| FoW – Tower of Courage		| Obsidian Shards, dust													|
+| Domain of Anguish				| Gemstones																|
+| City of Torc'qua				| Margonite Gemstones													|
+| Ravenheart Gloom				| Torment Gemstones														|
+| Stygian Veil					| Stygian Gemstones														|
+| Tunnels of the Forsaken		| E-blade																|
+| Underworld					| Globs of Ectoplasm													|
+| Kilroy						| Alcohol, Glacial Blades, Stone Summit Shield, Summit Warlord Shield	|
 
 ### Chest Runs
 
@@ -146,7 +150,7 @@ If it happens too often, make sure you are running the game at lowest quality an
 </details>
 
 <details>
-<summary><strong>Q: My character's name doesn't appear in the left dropdown.</strong></summary>
+<summary><strong>Q: My character's name does not appear in the left dropdown.</strong></summary>
 
 Check your system locale. Set it to English and that should fix the problem.
 </details>
@@ -206,7 +210,6 @@ You are welcome to create and contribute new bots 👍
 
 - 💡🛠️ **Fix Spirit Slaves farm**
 - 💡🕓 **Improve the Pongmei chest farm with Tasca chest farm capabilities**
-- 🔄💭 **Kilroy bot/Irontoe's lair (q8, survivor title)** - 1 request
 - 🧠💭 **Other consumables farms (Drake Kabob, Skalefin Soup and Pahnai Salad)** - 1 request
 - 🧠💭 **Nicholas the traveler items (gifties)**
 - 🧠💭 **Bandit raid**

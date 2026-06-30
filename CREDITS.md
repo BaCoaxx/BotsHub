@@ -64,7 +64,7 @@ But special thanks to Underavelvetmoon for sharing his work on the modstructs us
 - Contributors: Kronos, n1kn4x, Gahais
 - License: licensed under Apache 2.0
 
-### 'Froggy.au3' 'SoO.au3' 'FoW.au3'
+### 'Froggy.au3' 'SoO.au3' 'FoW.au3', 'TunnelsOfTheForsaken.au3'
 - Author: TDawg
 - Contributors: Kronos, Gahais, BuddyLeeX
 - License: licensed under Apache 2.0
@@ -74,7 +74,7 @@ But special thanks to Underavelvetmoon for sharing his work on the modstructs us
 - Contributors: Kronos, Gahais
 - License: licensed under Apache 2.0
 
-### 'Lightbringer.au3' 'Luxon.au3' 'Kurzick.au3'
+### 'Lightbringer.au3' 'LuxonMQ.au3' 'LuxonSS.au3' 'Kurzick Ferndale.au3'
 - Author: unknown
 - Contributors: Kronos, Gahais
 - Notes: Enormous modifications were made. Original was called OmniTitle.
@@ -105,7 +105,7 @@ Enormous modifications were made, to the point this bot is probably not in any w
 - Notes: Original work by Gahais, inspired from pvx wiki article.
 - License: licensed under Apache 2.0
 
-### 'Deldrimor.au3'
+### 'Deldrimor.au3', 'Kilroy.au3', 'Kurzick Drazach'
 - Author: Ian
 - Notes: Original work by Ian
 - License: licensed under Apache 2.0
