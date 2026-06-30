@@ -75,6 +75,7 @@ Opt('GUICloseOnESC', False)
 #include '../src/missions/WarSupplyKeiran.au3'
 #include '../src/runs/Boreal.au3'
 #include '../src/runs/Pongmei.au3'
+#include '../src/runs/RollerbeetleRacing.au3'
 #include '../src/runs/Tasca.au3'
 #include '../src/titles/LDOA.au3'
 #include '../src/utilities/Follower.au3'
@@ -99,7 +100,7 @@ Global Const $AVAILABLE_WEAPON_SLOTS = '|0|1|2|3|4'
 Global Const $KIT_AMOUNT_CHOICE = '|0|1|2|3|4|5|6|7|8|9|10|11|12'
 Global Const $AVAILABLE_FARMS = '|Asuran|Boreal|CoF|Corsairs|Deldrimor|Dragon Moss|Eden Iris|Feathers|Follower|FoW|FoW Tower of Courage|Froggy|Gemstones|Gemstone Margonite|Gemstone Stygian|Gemstone Torment|' & _
 	'Glint Challenge|Jade Brotherhood|Kilroy|Kournans|Kurzick Ferndale|Kurzick Drazach|Lightbringer & Sunspear|Lightbringer|LDOA|LuxonMQ|LuxonSS|Mantids|Ministerial Commendations|Minotaurs|Nexus Challenge|Norn|OmniFarm|Pongmei|' & _
-	'Raptors|SoO|SpiritSlaves|Sunspear Armor|Tasca|TunnelsOfTheForsaken|Underworld|Vaettirs|Vanguard|Voltaic|War Supply Keiran|Storage|Tests|TestSuite|Manual Mode'
+	'Raptors|Rollerbeetle Racing|SoO|SpiritSlaves|Sunspear Armor|Tasca|TunnelsOfTheForsaken|Underworld|Vaettirs|Vanguard|Voltaic|War Supply Keiran|Storage|Tests|TestSuite|Manual Mode'
 
 #Region GUI
 
