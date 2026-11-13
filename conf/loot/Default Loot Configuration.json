@@ -17,7 +17,61 @@
 			"Major (3pt)": true,
 			"Superior (50pt)": true
 		},
+		"PCons": {
+			"Drake Kabob": true,
+			"Bowl of Skalefin Soup": true,
+			"Pahnai Salad": true,
+			"Birthday Cupcake": true,
+			"Golden Egg": true,
+			"Candy Apple": true,
+			"Candy Corn": true,
+			"Slice of Pumpkin Pie": true,
+			"Blue Rock Candy": true,
+			"Green Rock Candy": true,
+			"Red Rock Candy": true,
+			"War Supplies": true,
+			"Lunar Fortune (Pig)": true,
+			"Lunar Fortune (Rat)": true,
+			"Lunar Fortune (Ox)": true,
+			"Lunar Fortune (Tiger)": true,
+			"Lunar Fortune (Rabbit)": true,
+			"Lunar Fortune (Dragon)": true,
+			"Lunar Fortune (Snake)": true,
+			"Lunar Fortune (Horse)": true,
+			"Lunar Fortune (Sheep)": true,
+			"Lunar Fortune (Monkey)": true,
+			"Lunar Fortune (Rooster)": true,
+			"Lunar Fortune (Dog)": true
+		},
+		"Morale": {
+			"Peppermint Candy Cane": true,
+			"Refined Jelly": true,
+			"Elixir of Valor": true,
+			"Wintergreen Candy Cane": true,
+			"Rainbow Candy Cane": true,
+			"Four Leaf Clover": true,
+			"Honeycomb": true,
+			"Pumpkin Cookie": true,
+			"Oath of Purity": true,
+			"Seal of the Dragon Empire": true,
+			"Shining Blade Ration": true
+		},
+		"Special drops": {
+			"Candy Cane Shard": true,
+			"Victory Token": true,
+			"Wintersday Gift": true,
+			"Wayfarer Mark": true,
+			"Lunar Token": true,
+			"Lunar Tokens": true,
+			"Trick-or-Treat Bag": true,
+			"Flame of Balthazar": true,
+			"Golden Flame of Balthazar": true,
+			"Celestial Sigil": true,
+			"Stalkers Rations": true,
+			"Birds Eye Compass": true
+		},
 		"Weapons and offhands": {
+			"Low Req Max Stats": true,
 			"White": {
 				"Axe": {
 					"Req 0": false,
@@ -962,6 +1016,7 @@
 			"Torment Gemstone": true,
 			"Diessa Chalice": true,
 			"Golden Rin Relic": true,
+			"Superb Charr Carving": true,
 			"Chunk of Drake Flesh": true,
 			"Skale Fin": true,
 			"Iboga Petal": true,
@@ -1023,20 +1078,12 @@
 			"White": true,
 			"Yellow": false
 		},
-		"Festival Items": {
-			"Wintersday Gift": true,
-			"Trick-or-Treat Bag": true,
-			"Lunar Token": true,
-			"Victory Token": true,
-			"Candy Cane Shard": true,
-			"Jade Wind Orb": true,
-			"Wayfarer Mark": true
-		},
 		"Quest items": {
 			"Map pieces": false
 		},
 		"Lockpicks": true,
-		"Keys": true
+		"Keys": true,
+		"Miniatures": true
 	},
 	"Identify items": {
 		"White": false,
@@ -1058,7 +1105,7 @@
 				},
 				"Runes": {
 					"Minor Vigor": true,
-					"Vitae": true,
+					"Vitae": false,
 					"Attunement": false,
 					"Major Vigor": true,
 					"Recovery": false,
@@ -1076,7 +1123,7 @@
 					"Nightstalkers": false
 				},
 				"Runes": {
-					"Minor Critical Strikes": false,
+					"Minor Critical Strikes": true,
 					"Minor Dagger Mastery": false,
 					"Minor Deadly Arts": false,
 					"Minor Shadow Arts": false,
@@ -1096,8 +1143,8 @@
 					"Forsaken": false
 				},
 				"Runes": {
-					"Minor Earth Prayers": false,
-					"Minor Mysticism": true,
+					"Minor Earth Prayers": true,
+					"Minor Mysticism": false,
 					"Minor Scythe Mastery": true,
 					"Minor Wind Prayers": false,
 					"Major Earth Prayers": false,
@@ -1121,7 +1168,7 @@
 				"Runes": {
 					"Minor Air Magic": false,
 					"Minor Earth Magic": false,
-					"Minor Energy Storage": true,
+					"Minor Energy Storage": false,
 					"Minor Water Magic": false,
 					"Minor Fire Magic": false,
 					"Major Air Magic": false,
@@ -1144,14 +1191,14 @@
 				},
 				"Runes": {
 					"Minor Domination Magic": false,
-					"Minor Fast Casting": true,
+					"Minor Fast Casting": false,
 					"Minor Illusion Magic": false,
 					"Minor Inspiration Magic": true,
 					"Major Domination Magic": false,
 					"Major Fast Casting": false,
 					"Major Illusion Magic": false,
 					"Major Inspiration Magic": false,
-					"Superior Domination Magic": true,
+					"Superior Domination Magic": false,
 					"Superior Fast Casting": false,
 					"Superior Illusion Magic": false,
 					"Superior Inspiration Magic": false
@@ -1183,7 +1230,7 @@
 					"Bloodstained": false,
 					"Tormentors": true,
 					"Bonelace": false,
-					"Minion Masters": false,
+					"Minion Masters": true,
 					"Blighters": false,
 					"Undertakers": false
 				},
@@ -1192,7 +1239,7 @@
 					"Minor Curses": false,
 					"Minor Death Magic": false,
 					"Minor Soul Reaping": false,
-					"Major Blood Magic": true,
+					"Major Blood Magic": false,
 					"Major Curses": false,
 					"Major Death Magic": false,
 					"Major Soul Reaping": false,
@@ -1208,7 +1255,7 @@
 				},
 				"Runes": {
 					"Minor Command": false,
-					"Minor Leadership": false,
+					"Minor Leadership": true,
 					"Minor Motivation": false,
 					"Minor Spear Mastery": false,
 					"Major Command": false,
@@ -1228,7 +1275,7 @@
 					"Stormbound": false,
 					"Scouts": false,
 					"Earthbound": false,
-					"Beastmasters": false
+					"Beastmasters": true
 				},
 				"Runes": {
 					"Minor Beast Mastery": false,
@@ -1240,7 +1287,7 @@
 					"Major Marksmanship": false,
 					"Major Wilderness Survival": false,
 					"Superior Beast Mastery": false,
-					"Superior Expertise": true,
+					"Superior Expertise": false,
 					"Superior Marksmanship": false,
 					"Superior Wilderness Survival": false
 				}
@@ -1252,7 +1299,7 @@
 					"Mystics": false
 				},
 				"Runes": {
-					"Minor Channeling Magic": false,
+					"Minor Channeling Magic": true,
 					"Minor Communing": true,
 					"Minor Restoration Magic": true,
 					"Minor Spawning Power": false,
@@ -1261,7 +1308,7 @@
 					"Major Restoration Magic": false,
 					"Major Spawning Power": false,
 					"Superior Channeling Magic": false,
-					"Superior Communing": true,
+					"Superior Communing": false,
 					"Superior Restoration Magic": false,
 					"Superior Spawning Power": true
 				}
@@ -1277,9 +1324,9 @@
 				"Runes": {
 					"Minor Absorption": false,
 					"Minor Axe Mastery": false,
-					"Minor Hammer Mastery": true,
-					"Minor Strength": true,
-					"Minor Swordsmanship": false,
+					"Minor Hammer Mastery": false,
+					"Minor Strength": false,
+					"Minor Swordsmanship": true,
 					"Minor Tactics": false,
 					"Major Absorption": false,
 					"Major Axe Mastery": false,
@@ -1326,7 +1373,7 @@
 				"Focus": {
 					"Forget me not (Halves skill recharge of spells of item's attribute)": true,
 					"Serenity now (Halves skill recharge of spells)": false,
-					"Hail to the king (Armor +5 while Health is above 50%)": false,
+					"Hail to the king (Armor +5 while Health is above 50%)": true,
 					"Faith is my shield (Armor +5 while Enchanted)": false,
 					"Might makes right (Armor +5 while attacking)": false,
 					"Knowing is half the battle (Armor +5 while casting)": false,
@@ -1488,11 +1535,11 @@
 			},
 			"Focus": {
 				"Suffix - Core": {
-					"of Fortitude (Health +30)": false,
+					"of Fortitude (Health +30)": true,
 					"Of Devotion (Health +45 while Enchanted)": false,
 					"Of Endurance (Health +45 while in a Stance)": false,
 					"Of Valor (Health +60 while Hexed)": false,
-					"Of Aptitude (Halves casting time of item's attribute spells - Chance 20%)": false,
+					"Of Aptitude (Halves casting time of item's attribute spells - Chance 20%)": true,
 					"Of Swiftness (Halves casting time of spells - Chance 10%)": false
 				}
 			},
@@ -1553,14 +1600,14 @@
 					"Furious (Double Adrenaline on hit - Chance 10%)": false,
 					"Sundering (Armor penetration +20% - Chance 20%)": false,
 					"Vampiric 5 (Life Draining 5 Health regeneration -1)": false,
-					"Zealous (Energy gain on hit: 1 Energy regeneration: -1)": true
+					"Zealous (Energy gain on hit: 1 Energy regeneration: -1)": false
 				},
 				"Suffix - Grip": {
 					"of Fortitude (Health +30)": false,
 					"Of Defense (Armor +5)": false,
 					"Of Shelter (Armor +7 vs physical damage)": false,
 					"Of Warding (Armor +7 vs elemental damage)": false,
-					"Of Enchanting (Enchantments last 20% longer)": true,
+					"Of Enchanting (Enchantments last 20% longer)": false,
 					"Of The Warrior": false,
 					"Of The Ranger": false,
 					"Of The Necromancer": false,
@@ -1594,7 +1641,7 @@
 					"Heavy (Lengthens Weakness duration on foes by 33%)": false,
 					"Poisonous (Lengthens Poison duration on foes by 33%)": false,
 					"Silencing (Lengthens Dazed duration on foes by 33%)": false,
-					"Furious (Double Adrenaline on hit - Chance 10%)": true,
+					"Furious (Double Adrenaline on hit - Chance 10%)": false,
 					"Sundering (Armor penetration +20% - Chance 20%)": false,
 					"Vampiric 3 (Life Draining 3 Health regeneration -1)": false,
 					"Zealous (Energy gain on hit: 1 Energy regeneration: -1)": false
@@ -1638,7 +1685,7 @@
 					"Of The Mesmer": false,
 					"Of The Elementalist": false,
 					"Of The Monk": false,
-					"Of The Ritualist": false,
+					"Of The Ritualist": true,
 					"Of The Assassin": false,
 					"Of The Paragon": false,
 					"Of The Dervish": false,
@@ -1714,7 +1761,7 @@
 					"Of The Mesmer": false,
 					"Of The Elementalist": false,
 					"Of The Monk": false,
-					"Of The Ritualist": false,
+					"Of The Ritualist": true,
 					"Of The Assassin": false,
 					"Of The Paragon": false,
 					"Of The Dervish": false
@@ -2471,6 +2518,7 @@
 			"Jadeite Shard": false
 		},
 		"Trophies": {
+			"Superb Charr Carving": false,
 			"Chunk of Drake Flesh": false,
 			"Skale Fin": false,
 			"Iboga Petal": false,
@@ -3244,6 +3292,7 @@
 			"Jadeite Shard": false
 		},
 		"Trophies": {
+			"Superb Charr Carving": false,
 			"Chunk of Drake Flesh": false,
 			"Skale Fin": false,
 			"Iboga Petal": false,
@@ -3312,7 +3361,106 @@
 	"Store items": {
 		"Gold": true,
 		"Consumables": true,
-		"Alcohols": true,
+		"Alcohols": {
+			"Minor (1pt)": true,
+			"Major (3pt)": true,
+			"Superior (50pt)": true
+		},
+		"Party": {
+			"Minor (1-2pt)": true,
+			"Major (3-7pt)": true,
+			"Superior (25-50pt)": true
+		},
+		"Sweets": {
+			"Minor (1-2pt)": true,
+			"Major (3pt)": true,
+			"Superior (50pt)": true
+		},
+		"PCons": {
+			"Drake Kabob": true,
+			"Bowl of Skalefin Soup": true,
+			"Pahnai Salad": true,
+			"Birthday Cupcake": false,
+			"Golden Egg": true,
+			"Candy Apple": true,
+			"Candy Corn": true,
+			"Slice of Pumpkin Pie": false,
+			"Blue Rock Candy": true,
+			"Green Rock Candy": true,
+			"Red Rock Candy": true,
+			"War Supplies": true,
+			"Lunar Fortune (Pig)": true,
+			"Lunar Fortune (Rat)": true,
+			"Lunar Fortune (Ox)": true,
+			"Lunar Fortune (Tiger)": true,
+			"Lunar Fortune (Rabbit)": true,
+			"Lunar Fortune (Dragon)": true,
+			"Lunar Fortune (Snake)": true,
+			"Lunar Fortune (Horse)": true,
+			"Lunar Fortune (Sheep)": true,
+			"Lunar Fortune (Monkey)": true,
+			"Lunar Fortune (Rooster)": true,
+			"Lunar Fortune (Dog)": true
+		},
+		"Morale": {
+			"Peppermint Candy Cane": true,
+			"Refined Jelly": true,
+			"Elixir of Valor": true,
+			"Wintergreen Candy Cane": true,
+			"Rainbow Candy Cane": true,
+			"Four Leaf Clover": true,
+			"Honeycomb": false,
+			"Pumpkin Cookie": true,
+			"Oath of Purity": true,
+			"Seal of the Dragon Empire": true,
+			"Shining Blade Ration": true
+		},
+		"Special drops": {
+			"Candy Cane Shard": true,
+			"Victory Token": true,
+			"Wintersday Gift": true,
+			"Wayfarer Mark": true,
+			"Lunar Token": true,
+			"Lunar Tokens": true,
+			"Trick-or-Treat Bag": true,
+			"Flame of Balthazar": true,
+			"Golden Flame of Balthazar": true,
+			"Celestial Sigil": true,
+			"Stalkers Rations": true,
+			"Birds Eye Compass": true
+		},
+		"Summoning stones": {
+			"Cracked Ascalonian War Horn": false,
+			"Igneous Summoning Stone": false,
+			"Legionnaire Summoning Crystal": false,
+			"Ghastly Summon": false,
+			"Mystical Summon": false,
+			"Tengu Summon": false,
+			"Imperial Guard Summon": false,
+			"Automaton Summon": false,
+			"Chitinous Summon": false,
+			"Amber Summon": false,
+			"Arctic Summon": false,
+			"Demonic Summon": false,
+			"Gelatinous Summon": false,
+			"Fossilized Summon": false,
+			"Jadeite Summon": false,
+			"Mischievous Summon": false,
+			"Frosty Summon": false,
+			"Zaishen Summon": false,
+			"Celestial Summon": false,
+			"Shining Blade Summon": false,
+			"Mysterious Summon": false,
+			"Merchant Summon": false
+		},
+		"Consets": {			
+			"Heroes Trifecta": false,
+			"Essence of Celerity": false,
+			"Armor of Salvation": false,
+			"Grail of Might": false,
+			"Scroll of Resurrection": false,
+			"Empowering Feasts": false
+		},
 		"Unidentified gold items": false,
 		"Weapons and offhands": {
 			"White": {
@@ -4259,6 +4407,7 @@
 			"Torment Gemstone": true,
 			"Diessa Chalice": true,
 			"Golden Rin Relic": true,
+			"Superb Charr Carving": true,
 			"Chunk of Drake Flesh": true,
 			"Skale Fin": true,
 			"Iboga Petal": true,
@@ -4319,15 +4468,6 @@
 			"Silver": false,
 			"White": true,
 			"Yellow": false
-		},
-		"Festival Items": {
-			"Wintersday Gift": true,
-			"Trick-or-Treat Bag": true,
-			"Lunar Token": true,
-			"Victory Token": true,
-			"Candy Cane Shard": true,
-			"Jade Wind Orb": true,
-			"Wayfarer Mark": true
 		},
 		"Quest items": {
 			"Map pieces": false

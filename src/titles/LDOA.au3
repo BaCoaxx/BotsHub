@@ -54,9 +54,9 @@ Global Const $LOW_HEALTH_CHECK_INTERVAL = 100
 Global $ldoa_farm_setup = False
 
 Global $ldoa_fight_options = CloneMap($default_move_aggro_kill_options)
-$ldoa_fight_options['openChests']	= False
-$ldoa_fight_options['callTarget']	= False
-$ldoa_fight_options['priorityMobs']	= True
+$ldoa_fight_options['openChests']			= False
+$ldoa_fight_options['callTarget']			= False
+$ldoa_fight_options['priorityTargeting']	= True
 
 ;~ Main method to get LDOA title
 Func LDOATitleFarm()
@@ -175,6 +175,7 @@ Func InitialSetupLDOA()
 
 	; This quest never appears as completed either - last dialog to get reward is the completion
 	Info('Finishing Profession Test')
+	$questNPC = GetAgentByID(DllStructGetData($questNPC, 'ID'))
 	GoToNPC($questNPC)
 	PingSleep(1000)
 	Dialog($professionTestFinishQuestDialogID)
@@ -299,11 +300,11 @@ Func LDOATitleFarmUnder2()
 	MoveTo(-10433, -6021)
 	UseConsumable($ID_IGNEOUS_SUMMONING_STONE, True)
 	Local $wurmies[][] = [ _
-		[-9551,	-5499], _
-		[-9545, -4205], _
-		[-9551, -2929], _
-		[-9559, -1324], _
-		[-9451, -301] _
+		[-9550,	-5500], _
+		[-9550, -4200], _
+		[-9550, -2900], _
+		[-9550, -1300], _
+		[-9450, -300] _
 	]
 	For $i = 0 To UBound($wurmies) - 1
 		MoveAggroAndKill($wurmies[$i][0], $wurmies[$i][1])

@@ -63,7 +63,7 @@ Global Const $BOREAL_HEART_OF_SHADOW	= 8
 Global Const $BOREAL_MOUNTAIN_PINESOUL_MODEL_ID = 6539
 Global Const $BOREAL_MOUNTAIN_ALOE_MODEL_ID = 6540
 
-; global variable to remember player's profession in setup
+; global variable to remember profession of player in setup
 Global $boreal_player_profession = $ID_ASSASSIN
 Global $boreal_farm_setup = False
 
@@ -94,7 +94,7 @@ Func SetupBorealFarm()
 	SetDisplayedTitle($ID_NORN_TITLE)
 
 	MoveTo(5600, -27900)
-	MoveTo(5200, -27900, $RANGE_ADJACENT, 0)
+	MoveTo(5200, -27900, $RANGE_ADJACENT)
 	If GetDistanceToPoint(GetMyAgent(), 5200, -27900) > $RANGE_ADJACENT Then
 		MoveTo(5350, -27500)
 		MoveTo(5500, -27750)
@@ -114,37 +114,28 @@ EndFunc
 
 Func SetupPlayerBorealChestFarm()
 	Info('Setting up player build skill bar')
-	Switch DllStructGetData(GetMyAgent(), 'Primary')
+	$boreal_player_profession = DllStructGetData(GetMyAgent(), 'Primary')
+	Switch $boreal_player_profession
 		Case $ID_WARRIOR
-			$boreal_player_profession = $ID_WARRIOR
-			LoadSkillTemplate($BOREAL_WARRIOR_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($BOREAL_WARRIOR_CHESTRUNNER_SKILLBAR)
 		Case $ID_RANGER
-			$boreal_player_profession = $ID_RANGER
-			LoadSkillTemplate($BOREAL_RANGER_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($BOREAL_RANGER_CHESTRUNNER_SKILLBAR)
 		Case $ID_MONK
-			$boreal_player_profession = $ID_MONK
-			LoadSkillTemplate($BOREAL_MONK_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($BOREAL_MONK_CHESTRUNNER_SKILLBAR)
 		Case $ID_NECROMANCER
-			$boreal_player_profession = $ID_NECROMANCER
-			LoadSkillTemplate($BOREAL_NECROMANCER_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($BOREAL_NECROMANCER_CHESTRUNNER_SKILLBAR)
 		Case $ID_MESMER
-			$boreal_player_profession = $ID_MESMER
-			LoadSkillTemplate($BOREAL_MESMER_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($BOREAL_MESMER_CHESTRUNNER_SKILLBAR)
 		Case $ID_ELEMENTALIST
-			$boreal_player_profession = $ID_ELEMENTALIST
-			LoadSkillTemplate($BOREAL_ELEMENTALIST_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($BOREAL_ELEMENTALIST_CHESTRUNNER_SKILLBAR)
 		Case $ID_ASSASSIN
-			$boreal_player_profession = $ID_ASSASSIN
-			LoadSkillTemplate($BOREAL_ASSASSIN_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($BOREAL_ASSASSIN_CHESTRUNNER_SKILLBAR)
 		Case $ID_RITUALIST
-			$boreal_player_profession = $ID_RITUALIST
-			LoadSkillTemplate($BOREAL_RITUALIST_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($BOREAL_RITUALIST_CHESTRUNNER_SKILLBAR)
 		Case $ID_PARAGON
-			$boreal_player_profession = $ID_PARAGON
-			LoadSkillTemplate($BOREAL_PARAGON_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($BOREAL_PARAGON_CHESTRUNNER_SKILLBAR)
 		Case $ID_DERVISH
-			$boreal_player_profession = $ID_DERVISH
-			LoadSkillTemplate($BOREAL_DERVISH_CHEST_RUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($BOREAL_DERVISH_CHEST_RUNNER_SKILLBAR)
 	EndSwitch
 	RandomSleep(250)
 	$boreal_has_shroud_of_distress = GetSkillbarSkillID($BOREAL_SHROUD_OF_DISTRESS) == $ID_SHROUD_OF_DISTRESS
@@ -165,7 +156,7 @@ Func BorealChestFarmLoop()
 
 	Info('Starting chest farm run')
 
-	MoveTo(5200, -27900, $RANGE_ADJACENT, 0)
+	MoveTo(5200, -27900, $RANGE_ADJACENT)
 	If GetDistanceToPoint(GetMyAgent(), 5200, -27900) > $RANGE_ADJACENT Then
 		MoveTo(5350, -27500)
 		MoveTo(5500, -27750)

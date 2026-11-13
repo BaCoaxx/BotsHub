@@ -64,11 +64,11 @@ Func SetupMinotaursFarm()
 EndFunc
 
 
-;~ Move out of outpost into Prophet's 'Path
+;~ Move out of outpost into Prophets 'Path
 Func GoToProphetsPath()
 	TravelToOutpost($ID_AUGURY_ROCK, $district_name)
 	While GetMapID() <> $ID_PROPHETS_PATH
-		Info('Moving to Prophet''s Path')
+		Info('Moving to Prophets Path')
 		MoveTo(-17071, -1065)
 		MoveTo(-18069, -1026)
 		MoveTo(-18853, -444)
@@ -102,6 +102,7 @@ Func FarmMinotaurs()
 		[2616,		7615,	'Minotaurs group 12'	] _
 	]
 	For $i = 0 To UBound($minotaurs) - 1
+		If CheckStuck($minotaurs[$i][2], 2 * $MINOTAURS_FARM_DURATION) == $FAIL Then Return $FAIL
 		If MoveAggroAndKillInRange($minotaurs[$i][0], $minotaurs[$i][1], $minotaurs[$i][2]) == $FAIL Then Return $FAIL
 	Next
 	Return $SUCCESS

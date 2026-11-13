@@ -61,8 +61,8 @@ Global Const $GEMSTONES_FARM_DURATION = (12 * 60 + 30) * 1000
 Global Const $MAX_GEMSTONES_FARM_DURATION = 18 * 60 * 1000
 
 ;=== Configuration / Globals ===
-Global Const $GEMSTONES_DEFEND_X = -3432
-Global Const $GEMSTONES_DEFEND_Y = -5564
+Global Const $GEMSTONES_DEFEND_POSITION_X = -3432
+Global Const $GEMSTONES_DEFEND_POSITION_Y = -5564
 
 ; Skill numbers declared to make the code WAY more readable (UseSkill($SKILL_CONVICTION) is better than UseSkill(1))
 Global Const $GEM_SYMBOLIC_CELERITY		= 1
@@ -124,9 +124,10 @@ EndFunc
 
 ;~ Done here to pick latest version of $default_move_aggro_kill_options
 Func SetupGemstonesFightOptions()
-	$gemstones_fight_options						= CloneMap($default_move_aggro_kill_options)
 	; heroes will be flagged before fight to defend the start location
-	$gemstones_fight_options['priorityMobs']		= True
+	$gemstones_fight_options						= CloneMap($default_move_aggro_kill_options)
+	$gemstones_fight_options['fightTimeout']		= $GEMSTONES_FARM_DURATION
+	$gemstones_fight_options['priorityTargeting']	= True
 	$gemstones_fight_options['skillsCostMap']		= $GEM_SKILLS_COSTS_MAP
 	; there are no chests in Ebony Citadel of Mallyx location
 	$gemstones_fight_options['openChests']			= False
@@ -137,9 +138,8 @@ Func SetupPlayerGemstonesFarm()
 	If IsTeamAutoSetup() Then Return $SUCCESS
 
 	If DllStructGetData(GetMyAgent(), 'Primary') == $ID_MESMER Then
-		Info('Player''s profession is mesmer. Loading up recommended mesmer build automatically')
-		LoadSkillTemplate($GEMSTONES_MESMER_SKILLBAR)
-		RandomSleep(250)
+		Info('Players profession is mesmer. Loading up recommended mesmer build automatically')
+		LoadSkillTemplateIfNeeded($GEMSTONES_MESMER_SKILLBAR)
 	Else
 		Info('Automatic player build setup is disabled. Assuming that player build is set up manually')
 	EndIf
@@ -152,7 +152,7 @@ Func GemstonesFarmLoop()
 	WalkToSpotGemstonesFarm()
 	UseSummoningStone()
 	Sleep(2000)
-	If Defend() == $FAIL Then Return $FAIL
+	If GemstonesDefendPosition() == $FAIL Then Return $FAIL
 	Return $SUCCESS
 EndFunc
 
@@ -174,23 +174,22 @@ Func WalkToSpotGemstonesFarm()
 	Info('Moving to defend position')
 	; go close to Zhellix to let him start erforming the ritual, Null for no interaction
 	GoToAgent(GetAgentByID($AGENTID_ZHELLIX), Null)
-	MoveTo($GEMSTONES_DEFEND_X, $GEMSTONES_DEFEND_Y)
+	MoveTo($GEMSTONES_DEFEND_POSITION_X, $GEMSTONES_DEFEND_POSITION_Y)
 	FanFlagHeroes()
 EndFunc
 
 
 ;~ Defending function
-Func Defend()
+Func GemstonesDefendPosition()
 	Info('Defending...')
 
 	While IsZhellixPerformingRitual()
-		;If GetMapLoading() == 2 Then Disconnected()
 		If CheckStuck('Gemstones fight', $MAX_GEMSTONES_FARM_DURATION) == $FAIL Then Return $FAIL
 		If IsDoARunFailed() Then Return $FAIL
 		Sleep(1000)
 		KillFoesInArea($gemstones_fight_options)
 		If IsPlayerAlive() Then PickUpItems(Null, DefaultShouldPickItem, $RANGE_SPIRIT)
-		MoveTo($GEMSTONES_DEFEND_X, $GEMSTONES_DEFEND_Y)
+		MoveTo($GEMSTONES_DEFEND_POSITION_X, $GEMSTONES_DEFEND_POSITION_Y)
 	WEnd
 	; if ritual completed then successful run
 	Return IsDoARunFailed()? $FAIL : $SUCCESS
@@ -206,13 +205,13 @@ Func IsDoARunFailed()
 EndFunc
 
 
-;~ While Zhellix stays within area of citadel's entrance and performs opening ritual then farm run is still on
+;~ While Zhellix stays within entrance of citadel area and performs opening ritual then farm run is still on
 Func IsZhellixPerformingRitual()
 	If IsDoARunFailed() Then Return False
 
 	Local $me = GetMyAgent()
 	Local $zhellix = GetAgentByID($AGENTID_ZHELLIX)
 	Local $foesCount = CountFoesInRangeOfAgent($me, $gemstones_fight_options['fightRange'])
-	; After all waves are finished, Zhellix leaves citadel's entrance area where player is, which makes below check False
+	; After all waves are finished, Zhellix leaves entrance of citadel area where player is, which makes below check False
 	Return (Not GetIsDead($zhellix) And GetDistance($me, $zhellix) < 1500) Or $foesCount > 0
 EndFunc

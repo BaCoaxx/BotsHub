@@ -116,7 +116,7 @@ Func MoveRadial($x, $y, $distance)
 EndFunc
 
 
-;~ Avoid usage, it's a square around the original position, making it awkward, it can also not add any random
+;~ Avoid usage, it is a square around the original position, making it awkward, it can also not add any random
 ;~ Move to a random location around the given coordinates. Returns True if successful
 Func RandomMove($X, $Y, $random = 50)
 	Return Move($X + Random(-$random, $random), $Y + Random(-$random, $random))
@@ -420,12 +420,18 @@ Func GetSkillbarSkillAdrenaline($skillSlot, $heroIndex = 0)
 EndFunc
 
 
-;~ Returns True if the skill at the skillslot given is recharged
+;~ Returns True if the skill at the given skillslot is recharged
 Func IsRecharged($skillSlot, $heroIndex = 0)
-	Local $skillbar = GetSkillbar($heroIndex)
+	Return IsSkillRecharged(GetSkillbar($heroIndex), $skillSlot)
+EndFunc
+
+
+;~ Return True if the skill from given skillbar at the given skillslot is recharged
+Func IsSkillRecharged($skillbar, $skillSlot, $skillTimer = Null)
 	Local $recharge = DllStructGetData($skillbar, 'Recharge' & $skillSlot)
 	If $recharge == 0 Then Return True
-	Return ($recharge - GetSkillTimer()) == 0
+	If $skillTimer == Null Then $skillTimer = GetSkillTimer()
+	Return ($recharge - $skillTimer) == 0
 EndFunc
 
 
@@ -1032,7 +1038,7 @@ Func GetAgentArray($type = 0)
 EndFunc
 
 
-;~ Returns a player's name.
+;~ Returns the name of a player.
 Func GetPlayerName($agent)
 	Local $loginNumber = DllStructGetData($agent, 'LoginNumber')
 	Local $offset[] = [0, 0x18, 0x2C, 0x80C, 76 * $loginNumber + 0x28, 0]
@@ -1109,7 +1115,7 @@ Func CancelAllHeroes()
 EndFunc
 
 
-;~ Place a hero's position flag.
+;~ Place the position flag of a hero.
 Func CommandHero($heroIndex, $X, $Y)
 	Return SendPacket(0x14, $HEADER_HERO_FLAG_SINGLE, GetHeroID($heroIndex), FloatToInt($X), FloatToInt($Y), 0)
 EndFunc
@@ -1128,7 +1134,7 @@ Func LockHeroTarget($heroIndex, $agentID = 0)
 EndFunc
 
 
-;~ Change a hero's aggression level.
+;~ Change aggression level of a hero.
 ;~ 0=Fight, 1=Guard, 2=Avoid
 Func SetHeroBehaviour($heroIndex, $aggressionLevel)
 	Local $heroID = GetHeroID($heroIndex)
@@ -1187,7 +1193,7 @@ Func GetHeroNumberByHeroID($heroID)
 EndFunc
 
 
-;~ Returns hero's profession ID (when it cannot be found by other means)
+;~ Returns profession ID of a hero (when it cannot be found by other means)
 Func GetHeroProfession($heroIndex, $secondary = False)
 	Local $processHandle = GetProcessHandle()
 	Local $offset[] = [0, 0x18, 0x2C, 0x6BC, 0]
@@ -1206,7 +1212,7 @@ Func GetHeroProfession($heroIndex, $secondary = False)
 EndFunc
 
 
-;~ Tests if a hero's skill slot is disabled.
+;~ Tests if the skill slot of a hero is disabled.
 Func GetIsHeroSkillSlotDisabled($heroIndex, $skillSlot)
 	Return BitAND(BitShift(1, -($skillSlot - 1)), DllStructGetData(GetSkillbar($heroIndex), 'Disabled')) > 0
 EndFunc
@@ -1321,14 +1327,14 @@ Func IsUnidentifiedGoldItem($item)
 EndFunc
 
 
-;~ Returns a weapon or shield's minimum required attribute.
+;~ Returns a weapon or shield minimum required attribute.
 Func GetItemReq($item)
 	Local $mod = GetModByIdentifier($item, '9827')
-	Return $mod[0]
+	Return $mod[0] == '' ? 0 : $mod[0]
 EndFunc
 
 
-;~ Returns a weapon or shield's required attribute.
+;~ Returns a weapon or shield required attribute.
 Func GetItemAttribute($item)
 	Local $mod = GetModByIdentifier($item, '9827')
 	Return $mod[1]
@@ -1554,7 +1560,7 @@ Func EquipItem($item)
 EndFunc
 
 
-;~ Equips an item specified by item's model ID. No impact if item is already equipped
+;~ Equips an item specified by item model ID. No impact if item is already equipped
 Func EquipItemByModelID($itemModelID)
 	Local $item = GetItemByModelID($itemModelID)
 	If $item == Null Then Return False
@@ -1562,7 +1568,7 @@ Func EquipItemByModelID($itemModelID)
 EndFunc
 
 
-;~ Checks if item specified by item's model ID is equipped in any weapon slot
+;~ Checks if item specified by item model ID is equipped in any weapon slot
 Func IsItemEquipped($itemModelID)
 	Local $item = GetItemByModelID($itemModelID)
 	If $item == Null Then Return False
@@ -1571,7 +1577,7 @@ Func IsItemEquipped($itemModelID)
 EndFunc
 
 
-;~ Checks if item specified by item's model ID is equipped in specified weapon slot (from 1 to 4)
+;~ Checks if item specified by item model ID is equipped in specified weapon slot (from 1 to 4)
 Func IsItemEquippedInWeaponSlot($itemModelID, $weaponSlot)
 	If $weaponSlot <> 1 And $weaponSlot <> 2 And $weaponSlot <> 3 And $weaponSlot <> 4 Then Return False
 	Local $item = GetItemByModelID($itemModelID)
@@ -1585,7 +1591,7 @@ EndFunc
 
 
 ; FIXME: does not work
-;~ Checks if item specified by item's model ID is located in any bag or backpack or is equipped in any weapon slot
+;~ Checks if item specified by item model ID is located in any bag or backpack or is equipped in any weapon slot
 Func ItemExistsInInventory($itemModelID)
 	Local $item = GetItemByModelID($itemModelID)
 	If $item == Null Then Return False
@@ -2395,7 +2401,7 @@ Func ToggleHeroPanel($hero)
 EndFunc
 
 
-;~ Toggle hero's pet panel.
+;~ Toggle pet panel of a hero.
 Func ToggleHeroPetPanel($hero)
 	Return PerformAction(($hero < 4 ? 0xDF : 0xFA) + $hero)
 EndFunc
@@ -2535,6 +2541,65 @@ EndFunc
 
 
 #Region Builds and Templates
+;~ Only load skill template if character does not have it already
+Func LoadSkillTemplateIfNeeded($templateCode, $heroIndex = 0)
+	If HeroHasTemplate($templateCode, $heroIndex) Then Return True
+	Local $result = LoadSkillTemplate($templateCode, $heroIndex)
+	RandomSleep(250)
+	Return $result
+EndFunc
+
+
+;~ Returns True if the hero (or player, heroIndex=0) already has all 8 skills matching the given template code.
+;~ Avoids redundant LoadSkillTemplate calls and saves significant setup time across all farms. Credits to Phiwi for this function.
+Func HeroHasTemplate($templateCode, $heroIndex = 0)
+	Local $buildTemplateChars = StringSplit($templateCode, '')
+	_ArrayDelete($buildTemplateChars, 0)
+	Local $buildTemplate = ''
+	For $character In $buildTemplateChars
+		$buildTemplate &= StringRight('000000' & Base64ToBin64($character), 6)
+	Next
+
+	; templateType (4 bits) + version (4 bits)
+	If Bin64ToDec(StringLeft($buildTemplate, 4)) <> 14 Then Return False
+	$buildTemplate = StringTrimLeft($buildTemplate, 8)
+
+	; professionBits (2 bits) => P
+	Local $professionBits = Bin64ToDec(StringLeft($buildTemplate, 2)) * 2 + 4
+	$buildTemplate = StringTrimLeft($buildTemplate, 2)
+
+	; primaryProfession (P bits)
+	Local $primaryProfession = Bin64ToDec(StringLeft($buildTemplate, $professionBits))
+	$buildTemplate = StringTrimLeft($buildTemplate, $professionBits)
+	If $primaryProfession <> GetHeroProfession($heroIndex) Then Return False
+
+	; Skip secondary (always same bits as primary in modern templates)
+	$buildTemplate = StringTrimLeft($buildTemplate, $professionBits) ; secondary
+
+	Local $attributesCount = Bin64ToDec(StringLeft($buildTemplate, 4))
+	$buildTemplate = StringTrimLeft($buildTemplate, 4)
+
+	Local $attributesBits = Bin64ToDec(StringLeft($buildTemplate, 4)) + 4
+	$buildTemplate = StringTrimLeft($buildTemplate, 4)
+
+	For $i = 1 To $attributesCount
+		$buildTemplate = StringTrimLeft($buildTemplate, $attributesBits + 4)
+	Next
+
+	Local $skillsBits = Bin64ToDec(StringLeft($buildTemplate, 4)) + 8
+	$buildTemplate = StringTrimLeft($buildTemplate, 4)
+
+	; Now 8 skill slots (11 bits each)
+	For $slot = 1 To 8
+		Local $expectedSkillID = Bin64ToDec(StringLeft($buildTemplate, $skillsBits))
+		$buildTemplate = StringTrimLeft($buildTemplate, $skillsBits)
+		Local $actualSkillID = GetSkillbarSkillID($slot, $heroIndex)
+		If $actualSkillID <> $expectedSkillID And $expectedSkillID > 0 Then Return False
+	Next
+	Return True
+EndFunc
+
+
 ;~ Loads skill template code.
 Func LoadSkillTemplate($buildTemplate, $heroIndex = 0)
 	Local $heroID = GetHeroID($heroIndex)
@@ -2604,10 +2669,10 @@ Func LoadSkillTemplate($buildTemplate, $heroIndex = 0)
 
 	$opTail = Bin64ToDec($buildTemplate)
 
-
 	LoadAttributes($attributes, $secondaryProfession, $heroIndex)
 
 	LoadSkillBar($skills[0], $skills[1], $skills[2], $skills[3], $skills[4], $skills[5], $skills[6], $skills[7], $heroIndex)
+	Return True
 EndFunc
 
 
@@ -2764,7 +2829,7 @@ Func DecodeEncString($ptr)
 	Return $value
 EndFunc
 
-; Decodes an encoded string to readable text using GW's internal decoder
+; Decodes an encoded string to readable text using GW internal decoder
 ; This calls ValidateAsyncDecodeStr via injected ASM code
 ; @param $a_p_Ptr - Pointer to the encoded string in GW memory
 ; @param $a_i_Timeout - Maximum time to wait for decode (ms), default 1000

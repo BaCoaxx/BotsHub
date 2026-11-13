@@ -15,8 +15,6 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
 
 #include '../../lib/GWA2_Headers.au3'
 #include '../../lib/GWA2.au3'
@@ -77,20 +75,22 @@ Func RunToTunnels()
 	WEnd
 	Info('Making way to entrance')
 	AdlibRegister('TrackPartyStatus', 10000)
-	While Not IsRunFailed() And Not IsAgentInRange(GetMyAgent(), 17982, 641, $RANGE_LONGBOW)
+	While Not IsRunFailed() And Not IsAgentInRange(GetMyAgent(), 18000, -1700, $RANGE_AREA)
 		WaitUntilPartyAlive()
 		UseSummoningStone()
-		MoveAggroAndKillInRange(21264, 3562, '1', $PLAYER_AGGRO_RANGE)
-		MoveAggroAndKillInRange(17982, 641, '2', $PLAYER_AGGRO_RANGE)
+		MoveAggroAndKillInRange(21250, 3550, '1', $PLAYER_AGGRO_RANGE)
+		MoveAggroAndKillInRange(18850, -900, '2', $PLAYER_AGGRO_RANGE)
+		MoveAggroAndKillInRange(19200, -4200, '3', $PLAYER_AGGRO_RANGE)
+		MoveAggroAndKillInRange(18000, -1700, '4', $PLAYER_AGGRO_RANGE)
 	WEnd
 	AdlibUnRegister('TrackPartyStatus')
 
 	$mapLoaded = False
 	Info('Going through door')
 	While Not $mapLoaded
-		MoveTo(17300, -400)
-		Move(17400, -800)
-		RandomSleep(2000)
+		MoveTo(17900, -1600)
+		Move(17600, -1300)
+		Sleep(3000)
 		$mapLoaded = WaitMapLoading($ID_TUNNELS_OF_THE_FORSAKEN_LVL_1)
 	WEnd
 	Return IsRunFailed() ? $FAIL : $SUCCESS
@@ -186,9 +186,9 @@ Func ClearTunnelsOfTheForsakenFloor2()
 		MoveAggroAndKillInRange(-12848, 18506, '16', $PLAYER_AGGRO_RANGE)
 		MoveAggroAndKillInRange(-10956, 19044, '17', $PLAYER_AGGRO_RANGE)
 		MoveAggroAndKillInRange(-9889, 18907, '18', $RANGE_NEARBY)
-        MoveAggroAndKillInRange(-8953, 18720, '18', $RANGE_NEARBY)
-        MoveAggroAndKillInRange(-7921, 18913, '18', $RANGE_NEARBY)
-        MoveAggroAndKillInRange(-7456, 18718, '18', $RANGE_NEARBY)
+		MoveAggroAndKillInRange(-8953, 18720, '18', $RANGE_NEARBY)
+		MoveAggroAndKillInRange(-7921, 18913, '18', $RANGE_NEARBY)
+		MoveAggroAndKillInRange(-7456, 18718, '18', $RANGE_NEARBY)
 		MoveAggroAndKillInRange(-6272, 17188, '19', $PLAYER_AGGRO_RANGE)
 		MoveAggroAndKillInRange(-5910, 14892, '20', $PLAYER_AGGRO_RANGE)
 		MoveAggroAndKillInRange(-7177, 13320, '21', $PLAYER_AGGRO_RANGE)
@@ -236,10 +236,12 @@ Func ClearTunnelsOfTheForsakenFloor3()
 		MoveAggroAndKillInRange(-14111, -6232, '7', $PLAYER_AGGRO_RANGE)
 		Sleep(2000)
 		MoveAggroAndKillInRange(-13875, -4543, '8', $PLAYER_AGGRO_RANGE)
+		PickUpItems()
 		MoveAggroAndKillInRange(-12599, -5454, '9', $PLAYER_AGGRO_RANGE)
 		Sleep(4000)
 		PickUpItems()
 		MoveAggroAndKillInRange(-10724, -3552, '10', $PLAYER_AGGRO_RANGE)
+		PickUpItems()
 	WEnd
 
 	While Not IsRunFailed() And Not IsAgentInRange(GetMyAgent(), -15949, -8561, $RANGE_LONGBOW)

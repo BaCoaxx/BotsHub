@@ -15,8 +15,6 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
 
 #include '../../lib/GWA2.au3'
 #include '../../lib/GWA2_ID.au3'
@@ -128,7 +126,7 @@ Func VanquishSilentSurf()
 		[-6300,		14500,	' ',	$WIDE_PLAYER_AGGRO_RANGE	], _
 		[-4100,		15650,	' ',	$WIDE_PLAYER_AGGRO_RANGE	], _
 		[-1900,		12900,	' ',	$WIDE_PLAYER_AGGRO_RANGE	], _
-		[-700,		10200	' ',	$WIDE_PLAYER_AGGRO_RANGE	], _
+		[-700,		10200,	' ',	$WIDE_PLAYER_AGGRO_RANGE	], _
 		[1400,		15150,	' ',	$WIDE_PLAYER_AGGRO_RANGE	], _
 		[4800,		15900,	' ',	$WIDE_PLAYER_AGGRO_RANGE	], _
 		[6450,		20200,	' ',	$WIDE_PLAYER_AGGRO_RANGE	], _
@@ -156,6 +154,7 @@ Func VanquishSilentSurf()
 	]
 
 	For $i = 0 To UBound($foes) - 1
+		If CheckStuck('Step ' & $i, 1.5 * $LUXONS_SILENT_SURF_DURATION) == $FAIL Then Return $FAIL
 		If MoveAggroAndKillInRange($foes[$i][0], $foes[$i][1], $foes[$i][2], $foes[$i][3]) == $FAIL Then Return $FAIL
 	Next
 

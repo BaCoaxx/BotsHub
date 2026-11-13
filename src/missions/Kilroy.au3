@@ -16,8 +16,6 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
 
 #include '../../lib/GWA2.au3'
 #include '../../lib/GWA2_ID.au3'
@@ -71,8 +69,8 @@ Func ManageKilroyQuest()
 		MoveTo(17280, -4850)
 		Local $questNPC = GetNearestNPCToCoords(17280, -4850)
 		TakeQuestReward($questNPC, $ID_QUEST_KILROYS_PUNCH_OUT_EXTRAVAGANZA, $KILROY_ACCEPT_REWARD)
-		Info('Zoning to Olafsted to Refresh Quest')
-		DistrictTravel($ID_OLAFSTEAD, $district_name)
+		Info('Zoning to Boreal Station to Refresh Quest')
+		DistrictTravel($ID_BOREAL_STATION, $district_name)
 		RandomSleep(500)
 		Info('Zoning back to Gunnars')
 		DistrictTravel($ID_GUNNARS_HOLD, $district_name)
@@ -132,10 +130,10 @@ Func FarmPunchOut()
 	; Skipping foes in the arena too
 	;KilroyMove(7000, -15500, 'Group 11')
 
-	Local $kilroy_move_options = CloneMap($default_move_defend_options)
-	$kilroy_move_options['defendFunction']	= KilroySpamBlockSkill
-	$kilroy_move_options['moveTimeOut']		= 15 * 1000
-	$kilroy_move_options['randomFactor']	= 0
+	Local $kilroy_move_options = CloneMap($default_move_options)
+	$kilroy_move_options['movementRoutine']	= KilroySpamBlockSkill
+	$kilroy_move_options['moveTimeout']		= 15 * 1000
+	$kilroy_move_options['moveVariance']	= 0
 
 	; Instead, running straight through the corridor
 	MoveAvoidingBodyBlock(1050, -14250, $kilroy_move_options)
@@ -146,12 +144,12 @@ Func FarmPunchOut()
 	; Following the right wall
 	MoveAvoidingBodyBlock(6200, -15850, $kilroy_move_options)
 	; Passage through the guards
-	MoveTo(6998, -16020, 0, 0, KilroySpamBlockSkill)
+	MoveTo(6998, -16020, 0, KilroySpamBlockSkill)
 	; This spot is the bodyblock spot: (7114, -16028)
-	MoveTo(7300, -16050, 0, 0, KilroySpamBlockSkill)
+	MoveTo(7300, -16050, 0, KilroySpamBlockSkill)
 	; Safe spot before boss
-	MoveTo(10550, -16100, 0, 0, KilroySpamBlockSkill)
-	MoveTo(11900, -16000, 0, 0, KilroySpamBlockSkill)
+	MoveTo(10550, -16100, 0, KilroySpamBlockSkill)
+	MoveTo(11900, -16000, 0, KilroySpamBlockSkill)
 	; Boss and Ettin at (13000, -15700)
 	Info('Boss and his pal')
 	Local $me = GetMyAgent()
@@ -202,7 +200,7 @@ Func KilroyMove($x, $y, $log = '', $openChests = True)
 
 		; Moving toward destination, but staying close to Kilroy - with timer to complete move
 		If TimerDiff($timer) > 120000 Then
-			MoveTo($x, $y, 0, 0, KilroySpamBlockSkill)
+			MoveTo($x, $y, 0, KilroySpamBlockSkill)
 		ElseIf GetDistance($me, $kilroy) > 2 * $RANGE_AREA Then
 			Move(DllStructGetData($kilroy, 'X'), DllStructGetData($kilroy, 'Y'))
 		Else
@@ -287,7 +285,7 @@ Func BrawlFight($target)
 		;	7			$SKILLBAR_BRAWLING_COMBO_PUNCH			off cooldown					2
 		;	8			$SKILLBAR_STAND_UP						just used when knocked down
 
-		; Here we are doing an intense usage of skillbar informations - it's better to avoid using IsRecharged and such
+		; Here we are doing an intense usage of skillbar informations - it is better to avoid using IsRecharged and such
 		Local $skillbar = GetSkillbar(0)
 		; Skill 7 is unavailable in NM
 		Local $recharge1 = DllStructGetData($skillbar, 'Recharge' & $SKILLBAR_BRAWLING_BLOCK)
@@ -348,7 +346,7 @@ Func GetBackUp()
 	While Not IsNearlyEqual($energyPercent, 1) And TimerDiff($timer) < 10000
 		; Respect skill 8 recharge
 		Local $skillbar = GetSkillbar()
-		If DllStructGetData($skillbar, "Recharge8") == 0 Then UseSkill($SKILLBAR_STAND_UP)
+		If DllStructGetData($skillbar, 'Recharge8') == 0 Then UseSkill($SKILLBAR_STAND_UP)
 		RandomSleep(50)
 		$me = GetMyAgent()
 		$energyPercent = DllStructGetData($me, 'EnergyPercent')

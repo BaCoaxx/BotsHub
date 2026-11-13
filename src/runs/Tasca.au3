@@ -63,7 +63,6 @@ Global Const $TASCA_HEART_OF_SHADOW		= 8
 Global Const $TASCA_CHEST_RANGE = 1.5 * $RANGE_SPELLCAST
 
 Global $tasca_farm_setup = False
-Global $tasca_player_profession = $ID_DERVISH
 
 ;~ Main method to chest farm Tasca
 Func TascaChestFarm()
@@ -100,26 +99,19 @@ Func SetupPlayerTascaChestFarm()
 	Info('Setting up player build skill bar')
 	Switch DllStructGetData(GetMyAgent(), 'Primary')
 		Case $ID_DERVISH
-			$tasca_player_profession = $ID_DERVISH
-			LoadSkillTemplate($TASCA_DERVISH_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($TASCA_DERVISH_CHESTRUNNER_SKILLBAR)
 		Case $ID_ASSASSIN
-			$tasca_player_profession = $ID_ASSASSIN
-			LoadSkillTemplate($TASCA_ASSASSIN_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($TASCA_ASSASSIN_CHESTRUNNER_SKILLBAR)
 		Case $ID_MESMER
-			$tasca_player_profession = $ID_MESMER
-			LoadSkillTemplate($TASCA_MESMER_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($TASCA_MESMER_CHESTRUNNER_SKILLBAR)
 		Case $ID_MONK
-			$tasca_player_profession = $ID_MONK
-			LoadSkillTemplate($TASCA_MONK_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($TASCA_MONK_CHESTRUNNER_SKILLBAR)
 		Case $ID_ELEMENTALIST
-			$tasca_player_profession = $ID_ELEMENTALIST
-			LoadSkillTemplate($TASCA_ELEMENTALIST_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($TASCA_ELEMENTALIST_CHESTRUNNER_SKILLBAR)
 		Case $ID_NECROMANCER
-			$tasca_player_profession = $ID_NECROMANCER
-			LoadSkillTemplate($TASCA_NECROMANCER_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($TASCA_NECROMANCER_CHESTRUNNER_SKILLBAR)
 		Case $ID_RITUALIST
-			$tasca_player_profession = $ID_RITUALIST
-			LoadSkillTemplate($TASCA_RITUALIST_CHESTRUNNER_SKILLBAR)
+			LoadSkillTemplateIfNeeded($TASCA_RITUALIST_CHESTRUNNER_SKILLBAR)
 		Case Else
 			; other characters have too few energy
 			Warn('Should run this farm as Dervish, Assassin, Mesmer, Monk, Elementalist, Necromancer or Ritualist')
@@ -144,11 +136,11 @@ Func SetupTeamTascaChestFarm()
 EndFunc
 
 
-;~ Move out of outpost into Tasca's Demise
+;~ Move out of outpost into Tascas Demise
 Func GoToTascasDemise()
 	TravelToOutpost($ID_THE_GRANITE_CITADEL, $district_name)
 	While GetMapID() <> $ID_TASCAS_DEMISE
-		Info('Moving to Tasca''s Demise')
+		Info('Moving to Tascas Demise')
 		MoveTo(-10000, 18875)
 		Move(-9250, 19850)
 		RandomSleep(1000)
@@ -170,7 +162,7 @@ Func TascaChestFarmLoop()
 	UseConsumable($ID_BIRTHDAY_CUPCAKE, True)
 	; Calling it here to already use shroud of distress and dwarven stability and have enough mana later on
 	CommandAll(-11300, 21389)
-	TascaDefendFunction(0, 0)
+	TascaSurviveFunction(0, 0)
 	Move(-4000, 19000)
 	Sleep(10000)
 	PrepareZephyrSpirit()
@@ -181,62 +173,62 @@ Func TascaChestFarmLoop()
 	TascaChestRun(-2000, 17500)
 	TascaChestRun(1000, 16500)
 	Info('#1/13')
-	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 	TascaChestRun(3000, 15000)
 	TascaChestRun(5900, 14500)
 	Local $annoyingChest = ScanForChests(2000, True, 5500, 18000)
 	Notice('Bonus chest ? ' & ($annoyingChest <> Null))
 	TascaChestRun(6750, 14500)
 	Info('#2/13')
-	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 	TascaChestRun(8000, 15000)
 	TascaChestRun(9500, 16000)
 	TascaChestRun(10500, 18000)
 	Info('#3/13')
-	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 	TascaChestRun(11500, 19500)
-	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 	TascaChestRun(12500, 21000)
 	; Very far chests here, spirit range is needed
 	Info('#4/13')
-	$openedChests += FindAndOpenChests($RANGE_SPIRIT, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($RANGE_SPIRIT, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 	TascaChestRun(13000, 23500)
 	Info('#5/13')
-	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 	TascaChestRun(12000, 25000)
 	Info('#6/13')
-	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 	TascaChestRun(11500, 26000)
 	Info('#7/13')
-	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 	TascaChestRun(9750, 26750)
 	Info('#8/13')
-	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 	TascaChestRun(7750, 26125)
 	Info('#9/13')
-	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 	TascaChestRun(6500, 27500)
 	Info('#10/13')
-	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 	TascaChestRun(5000, 28000)
 	; Chest can be all the way north of the map - need extreme range here
-	$openedChests += FindAndOpenChests($RANGE_SPIRIT + 500, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($RANGE_SPIRIT + 500, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 	TascaChestRun(4000, 27000)
 	; Chest can be all the way west of the map - need extreme range here
 	Info('#11/13')
-	$openedChests += FindAndOpenChests($RANGE_SPIRIT + 500, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($RANGE_SPIRIT + 500, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 	TascaChestRun(4000, 26000)
-	$openedChests += FindAndOpenChests($RANGE_SPIRIT, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($RANGE_SPIRIT, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 	TascaChestRun(5000, 25000)
 	TascaChestRun(6000, 22000)
 	Info('#12/13')
-	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 	TascaChestRun(4500, 21500)
 	If ($annoyingChest == Null) Then $annoyingChest = ScanForChests(2000, True, 5500, 18000)
 	Notice('Bonus chest ? ' & ($annoyingChest <> Null))
 	TascaChestRun(3000, 21500)
 	Info('#13/13')
-	$openedChests += FindAndOpenChests($RANGE_SPIRIT, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+	$openedChests += FindAndOpenChests($RANGE_SPIRIT, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 
 	If ($annoyingChest <> Null) Then
 		TascaChestRun(6000, 21500)
@@ -245,7 +237,7 @@ Func TascaChestFarmLoop()
 		$annoyingChest = ScanForChests(2000, True, 5500, 18000)
 		Local $target = GetTargetToEscapeWithDeathsCharge(DllStructGetData($annoyingChest, 'X'), DllStructGetData($annoyingChest, 'Y'))
 		If $target <> Null Then UseSkillEx($TASCA_DEATHS_CHARGE, $target)
-		$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaDefendFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
+		$openedChests += FindAndOpenChests($TASCA_CHEST_RANGE, TascaSurviveFunctionForChests, UnblockWhenOpeningChests) ? 1 : 0
 		RandomSleep(1000)
 	EndIf
 
@@ -270,14 +262,14 @@ Func TascaChestRun($X, $Y)
 			Move($X, $Y)
 		EndIf
 
-		TascaDefendFunction($X, $Y)
-		; Energy usage becomes too heavy if we start using Death's Charge as a speedup
+		TascaSurviveFunction($X, $Y)
+		; Energy usage becomes too heavy if we start using Deaths Charge as a speedup
 		;If GetEnergy() >= 5 And IsRecharged($TASCA_DEATHS_CHARGE) Then
 		;	Local $target = GetTargetForDeathsCharge($X, $Y, 700)
 		;	If $target <> Null Then UseSkillEx($TASCA_DEATHS_CHARGE, $target)
 		;EndIf
 
-		; We only start unblocking after 10 times 250 ms which is 2.5 s -> that's because knockdown lasts 2s
+		; We only start unblocking after 10 times 250 ms which is 2.5 s -> that is because knockdown lasts 2s
 		If $blockedCounter > 10 And GetEnergy() >= 10 Then
 			Local $target = GetTargetToEscapeWithDeathsCharge($X, $Y)
 			If $target <> Null And IsRecharged($TASCA_DEATHS_CHARGE) Then
@@ -299,7 +291,7 @@ Func TascaChestRun($X, $Y)
 EndFunc
 
 
-;~ Get a foe close enough to use Death's Charge on and as close as possible to coordinates
+;~ Get a foe close enough to use Deaths Charge on and as close as possible to coordinates
 Func GetTargetToEscapeWithDeathsCharge($X, $Y)
 	Local $targetDistance = 999999
 	Local $target = Null
@@ -329,14 +321,14 @@ Func UnblockWhenOpeningChests()
 EndFunc
 
 
-;~ Wrapper for TascaDefendFunction to be used in FindAndOpenChests
-Func TascaDefendFunctionForChests()
-	Return TascaDefendFunction(0, 0)
+;~ Wrapper for TascaSurviveFunction to be used in FindAndOpenChests
+Func TascaSurviveFunctionForChests()
+	Return TascaSurviveFunction(0, 0)
 EndFunc
 
 
 ;~ Use defensive skills while opening chests
-Func TascaDefendFunction($X, $Y)
+Func TascaSurviveFunction($X, $Y)
 	; Using timers here reduce DllCalls and make bot more reactive
 	Local Static $timer_ShroudOfDistress = Null
 	Local Static $timer_Shadowform = Null

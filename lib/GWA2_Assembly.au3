@@ -673,7 +673,7 @@ Func MapScanResultsToLabels()
 	$ping_address = MemoryRead($processHandle, $scan_results['Ping'])
 	$status_code_address = MemoryRead($processHandle, $scan_results['StatusCode'])
 	Local $packetLocationAddress = MemoryRead($processHandle, $scan_results['PacketLocation'])
-	$pre_game_address = MemoryRead($processHandle, $scan_results['PreGame'] + 0x35)
+	$pre_game_address = MemoryRead($processHandle, $scan_results['PreGame'] + 0x33)
 	Local $frameArray = MemoryRead($processHandle, $scan_results['FrameArray'] - 0x13)
 	$scene_context_ptr = MemoryRead($processHandle, $scan_results['SceneContext'] + 0x1B)
 	$time_on_map_ptr = $scene_context_ptr + 0xC
@@ -2004,7 +2004,7 @@ Func AssemblerCreateAgentCommands()
 	; bytes, so partial structs are fully usable and no live agent is ever skipped.
 	;
 	; Check: (ESI & 0xFFF) + 0x1C0 > 0x1000 (struct offset + size overflows page)
-	; ECX is freely available here — it is overwritten below.
+	; ECX is freely available here - it is overwritten below.
 	_('mov ecx,esi')						; ecx = agent struct pointer
 	_('and ecx,FFF')						; ecx = byte offset within 4KB page
 	_('add ecx,1C0 -> 81C1C0010000')		; ecx += 448 (struct size)

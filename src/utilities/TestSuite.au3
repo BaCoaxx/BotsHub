@@ -24,7 +24,6 @@
 #include '../../lib/Utils-Console.au3'
 #include '../../lib/Utils-Storage.au3'
 #include '../../lib/Utils.au3'
-#include '../farms/Raptors.au3'
 
 
 ; ==== Constants ====
@@ -79,14 +78,12 @@ EndFunc
 Func ManualMode()
 	Local $freePeerIndex = OpenPeersSharedMemoryBlocks()
 	Info('First free peer index: ' & $freePeerIndex)
-	If CreatePeerSharedMemoryBlock($freePeerIndex) Then 
-		AdlibRegister('ShareTeamEffects', $HR_INTERVAL)
-	EndIf
+	If CreatePeerSharedMemoryBlock($freePeerIndex) Then AdlibRegister('ShareTeamEffects', $HR_INTERVAL)
 	Return $PAUSE
 EndFunc
 
 
-;~ Collect player's and heroes effects and share them in shared memory
+;~ Collect player and heroes effects and share them in shared memory
 Func ShareTeamEffects()
 	Local $map = CollectHeroesEffects()
 	WriteHeroesEffectsToSharedMemory($map)
@@ -130,7 +127,7 @@ Func TestMovement()
 
 	Local $myX = DllStructGetData($me, 'X')
 	Local $myY = DllStructGetData($me, 'Y')
-	MoveTo($myX + 200, $myY + 200, 0, 0)
+	MoveTo($myX + 200, $myY + 200, 0)
 	$me = GetMyAgent()
 	If DllStructGetData($me, 'X') == $myX And DllStructGetData($me, 'Y') == $myY Then Return $FAIL
 
@@ -177,7 +174,7 @@ EndFunc
 Func TestLoadingBuild()
 	Info('Testing build loading')
 
-	LoadSkillTemplate($RESURRECT_SIGNET_AND_IAU)
+	LoadSkillTemplateIfNeeded($RESURRECT_SIGNET_AND_IAU)
 	Sleep(500)
 	If GetSkillbarSkillID($RESURRECTION_SIGNET_SKILLSLOT) <> $ID_RESURRECTION_SIGNET Then Return $FAIL
 	If GetSkillbarSkillID($IAU_SKILLSLOT) <> $ID_I_AM_UNSTOPPABLE Then Return $FAIL
@@ -186,7 +183,7 @@ Func TestLoadingBuild()
 	AddHero($HERO_TO_ADD)
 	Sleep(500)
 
-	LoadSkillTemplate($RESURRECT_SIGNET_AND_FALLBACK, 1)
+	LoadSkillTemplateIfNeeded($RESURRECT_SIGNET_AND_FALLBACK, 1)
 	Sleep(500)
 	If GetSkillbarSkillID($RESURRECTION_SIGNET_SKILLSLOT, 1) <> $ID_RESURRECTION_SIGNET Then Return $FAIL
 	If GetSkillbarSkillID($FALLBACK_SKILLSLOT, 1) <> $ID_FALL_BACK Then Return $FAIL

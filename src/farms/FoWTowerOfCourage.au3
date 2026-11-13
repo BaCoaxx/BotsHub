@@ -86,11 +86,11 @@ Global Const $FOW_TOC_FARM_INFORMATIONS = 'For best results, have :' & @CRLF _
 Global Const $FOW_TOC_FARM_DURATION = 3 * 60 * 1000
 Global Const $MAX_FOW_TOC_FARM_DURATION = 6 * 60 * 1000
 
-Global $fow_toc_move_options					= CloneMap($default_move_defend_options)
-$fow_toc_move_options['defendFunction']			= CastFowToCBuffs
-$fow_toc_move_options['randomFactor']			= 25
-$fow_toc_move_options['hosSkillSlot']			= $FOW_TOC_HEART_OF_SHADOW
-$fow_toc_move_options['deathChargeSkillSlot']	= $FOW_TOC_DEATH_CHARGE
+Global $fow_toc_move_options					= CloneMap($default_move_options)
+$fow_toc_move_options['movementRoutine']		= CastFowToCBuffs
+$fow_toc_move_options['moveVariance']			= 25
+$fow_toc_move_options['skillSlotHoS']			= $FOW_TOC_HEART_OF_SHADOW
+$fow_toc_move_options['skillSlotDeathsCharge']	= $FOW_TOC_DEATH_CHARGE
 
 ;Global Const $FOW_TOC_MODELID_SHADOW_MESMER	= 2855
 ;Global Const $FOW_TOC_MODELID_SHADOW_ELEMENTAL	= 2856
@@ -136,8 +136,7 @@ EndFunc
 Func SetupPlayerFowToCFarm()
 	Info('Setting up player build skill bar')
 	If DllStructGetData(GetMyAgent(), 'Primary') == $ID_RANGER Then
-		LoadSkillTemplate($RA_FOW_TOC_FARMER_SKILLBAR)
-		RandomSleep(250)
+		LoadSkillTemplateIfNeeded($RA_FOW_TOC_FARMER_SKILLBAR)
 	Else
 		Warn('You need to run this farm bot as Ranger')
 		Return $FAIL
@@ -148,8 +147,8 @@ EndFunc
 
 Func SetupTeamFoWToCFarm()
 	Info('Setting up team build skill bars')
-	LoadSkillTemplate($FOW_TOC_M_HERO_SKILLBAR, 1)
-	LoadSkillTemplate($FOW_TOC_P_HERO_SKILLBAR, 2)
+	LoadSkillTemplateIfNeeded($FOW_TOC_M_HERO_SKILLBAR, 1)
+	LoadSkillTemplateIfNeeded($FOW_TOC_P_HERO_SKILLBAR, 2)
 	RandomSleep(250)
 	DisableAllHeroSkills(1)
 	DisableAllHeroSkills(2)
@@ -167,21 +166,21 @@ Func FoWToCFarmLoop()
 	Move(-21100, -2400)
 	; Dark escape can be replaced by other skills like great dwarf armor to increase survivability at the cost of farm speed
 	;~ UseSkillEx($FOW_TOC_DARK_ESCAPE)
-	If MoveDefendingFoWToC(-21100, -2400) == $FAIL Then Return $FAIL
-	If MoveDefendingFoWToC(-17500, -2800) == $FAIL Then Return $FAIL
+	If MoveAndSurviveFoWToC(-21100, -2400) == $FAIL Then Return $FAIL
+	If MoveAndSurviveFoWToC(-17500, -2800) == $FAIL Then Return $FAIL
 	UseSkillEx($FOW_TOC_MENTAL_BLOCK)
-	If MoveDefendingFoWToC(-16500, -3100) == $FAIL Then Return $FAIL
+	If MoveAndSurviveFoWToC(-16500, -3100) == $FAIL Then Return $FAIL
 	UseSkillEx($FOW_TOC_UNSEEN_FURY)
 
 	Info('Balling abyssals')
-	If MoveDefendingFoWToC(-15250, -3600) == $FAIL Then Return $FAIL
-	If MoveDefendingFoWToC(-14450, -3500) == $FAIL Then Return $FAIL
-	If MoveDefendingFoWToC(-14150, -2950) == $FAIL Then Return $FAIL
-	If MoveDefendingFoWToC(-13600, -1800) == $FAIL Then Return $FAIL
+	If MoveAndSurviveFoWToC(-15250, -3600) == $FAIL Then Return $FAIL
+	If MoveAndSurviveFoWToC(-14450, -3500) == $FAIL Then Return $FAIL
+	If MoveAndSurviveFoWToC(-14150, -2950) == $FAIL Then Return $FAIL
+	If MoveAndSurviveFoWToC(-13600, -1800) == $FAIL Then Return $FAIL
 	UseSkillEx($FOW_TOC_WHIRLING_DEFENSE)
 	Local $whirlingDefenseTimer = TimerInit()
-	If MoveDefendingFoWToC(-14200, -700) == $FAIL Then Return $FAIL
-	If MoveDefendingFoWToC(-14650, -200) == $FAIL Then Return $FAIL
+	If MoveAndSurviveFoWToC(-14200, -700) == $FAIL Then Return $FAIL
+	If MoveAndSurviveFoWToC(-14650, -200) == $FAIL Then Return $FAIL
 
 	Info('Killing abyssals')
 	Local $killTimer = TimerInit()
@@ -204,22 +203,21 @@ Func FoWToCFarmLoop()
 	RandomSleep(500)
 
 	Info('Balling rangers')
-	If MoveDefendingFoWToC(-14200, -700) == $FAIL Then Return $FAIL
-	If MoveDefendingFoWToC(-13600, -1800) == $FAIL Then Return $FAIL
-	If MoveDefendingFoWToC(-14750, -2800) == $FAIL Then Return $FAIL
+	If MoveAndSurviveFoWToC(-14200, -700) == $FAIL Then Return $FAIL
+	If MoveAndSurviveFoWToC(-13600, -1800) == $FAIL Then Return $FAIL
+	If MoveAndSurviveFoWToC(-14750, -2800) == $FAIL Then Return $FAIL
 	RandomSleep(2000)
-	If MoveDefendingFoWToC(-15150, -2950) == $FAIL Then Return $FAIL
+	If MoveAndSurviveFoWToC(-15150, -2950) == $FAIL Then Return $FAIL
 	While TimerDiff($whirlingDefenseTimer) < 60000
 		RandomSleep(2000)
 	WEnd
 
 	Info('Killing rangers')
 	; Longest bow range is around 1500
-	Local $target = GetFurthestNPCInRangeOfCoords($ID_ALLEGIANCE_FOE, Null, Null, $RANGE_SPELLCAST + 500)
-	Local $center = FindMiddleOfFoes(DllStructGetData($target, 'X'), DllStructGetData($target, 'Y'), $RANGE_EARSHOT)
+	Local $center = FindMiddleOfFoes(-14275, -1900, $RANGE_EARSHOT)
+	Local $target = GetNearestEnemyToCoords($center[0], $center[1])
 	CastFowToCBuffs()
-	GetAlmostInRangeOfAgent($target)
-	CastFowToCBuffs()
+	MoveTo(-14550, -2700)
 	While IsRecharged($FOW_TOC_DEATH_CHARGE)
 		UseSkillEx($FOW_TOC_DEATH_CHARGE, $target)
 		RandomSleep(100)
@@ -256,7 +254,7 @@ Func FoWToCFarmLoop()
 EndFunc
 
 
-Func MoveDefendingFoWToC($destinationX, $destinationY)
+Func MoveAndSurviveFoWToC($destinationX, $destinationY)
 	CastFowToCBuffs()
 	If CheckStuck('FoW', $MAX_FOW_TOC_FARM_DURATION) == $FAIL Then Return $FAIL
 	Return MoveAvoidingBodyBlock($destinationX, $destinationY, $fow_toc_move_options)

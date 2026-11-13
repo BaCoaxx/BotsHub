@@ -29,7 +29,7 @@ https://gwpvx.fandom.com/wiki/Build:Team_-_7_Hero_AFK_Glint%27s_Challenge_Farm
 
 
 ; ==== Constants ====
-Global Const $GLINT_CHALLENGE_INFORMATIONS = 'Brotherhood armor farm in Glint''s challenge with 7 hero team' & @CRLF _
+Global Const $GLINT_CHALLENGE_INFORMATIONS = 'Brotherhood armor farm in Glints challenge with 7 hero team' & @CRLF _
 	& 'It is advisable to unequip staves, wands and focuses from player and heroes so that foes will not cast chaos storm on them:' & @CRLF _
 	& 'This farm bot is based on below article:' & @CRLF _
 	& 'https://gwpvx.fandom.com/wiki/Build:Team_-_7_Hero_AFK_Glint%27s_Challenge_Farm'
@@ -64,7 +64,6 @@ Global Const $AGENTID_BABY_DRAGON = 19
 Global Const $MODELID_BABY_DRAGON = 1816
 Global Const $BROTHERHOOD_CHEST_X = -3184
 Global Const $BROTHERHOOD_CHEST_Y = 908
-Global Const $BROTHERHOOD_CHEST_GADGETID = 9157
 
 Global $glint_challenge_fight_options
 Global $glint_challenge_setup = False
@@ -116,14 +115,13 @@ Func SetupTeamGlintChallengeFarm()
 	AddHero($ID_NORGU)
 	AddHero($ID_RAZAH)
 	RandomSleep(500)
-	LoadSkillTemplate($GLINT_RITU_SOUL_TWISTER_HERO_SKILLBAR, $GLINT_HERO_RITU_SOULTWISTER)
-	LoadSkillTemplate($GLINT_NECRO_FLESH_GOLEM_HERO_SKILLBAR, $GLINT_HERO_NECRO_FLESHGOLEM)
-	LoadSkillTemplate($GLINT_NECRO_HEXER_HERO_SKILLBAR, $GLINT_HERO_NECRO_HEXER)
-	LoadSkillTemplate($GLINT_NECRO_BIP_HERO_SKILLBAR, $GLINT_HERO_NECRO_BIP)
-	LoadSkillTemplate($GLINT_MESMER_PANIC_HERO_SKILLBAR, $GLINT_HERO_MESMER_PANIC)
-	LoadSkillTemplate($GLINT_MESMER_INEPTITUDE_HERO_SKILLBAR, $GLINT_HERO_MESMER_INEPTITUDE_1)
-	LoadSkillTemplate($GLINT_MESMER_INEPTITUDE_HERO_SKILLBAR, $GLINT_HERO_MESMER_INEPTITUDE_2)
-	RandomSleep(500)
+	LoadSkillTemplateIfNeeded($GLINT_RITU_SOUL_TWISTER_HERO_SKILLBAR, $GLINT_HERO_RITU_SOULTWISTER)
+	LoadSkillTemplateIfNeeded($GLINT_NECRO_FLESH_GOLEM_HERO_SKILLBAR, $GLINT_HERO_NECRO_FLESHGOLEM)
+	LoadSkillTemplateIfNeeded($GLINT_NECRO_HEXER_HERO_SKILLBAR, $GLINT_HERO_NECRO_HEXER)
+	LoadSkillTemplateIfNeeded($GLINT_NECRO_BIP_HERO_SKILLBAR, $GLINT_HERO_NECRO_BIP)
+	LoadSkillTemplateIfNeeded($GLINT_MESMER_PANIC_HERO_SKILLBAR, $GLINT_HERO_MESMER_PANIC)
+	LoadSkillTemplateIfNeeded($GLINT_MESMER_INEPTITUDE_HERO_SKILLBAR, $GLINT_HERO_MESMER_INEPTITUDE_1)
+	LoadSkillTemplateIfNeeded($GLINT_MESMER_INEPTITUDE_HERO_SKILLBAR, $GLINT_HERO_MESMER_INEPTITUDE_2)
 	SetHeroBehaviour($GLINT_HERO_RITU_SOULTWISTER, $ID_HERO_FIGHTING)
 	SetHeroBehaviour($GLINT_HERO_NECRO_FLESHGOLEM, $ID_HERO_FIGHTING)
 	SetHeroBehaviour($GLINT_HERO_NECRO_HEXER, $ID_HERO_FIGHTING)
@@ -178,7 +176,7 @@ Func GlintChallenge()
 				$glitchTimer = TimerInit()
 				$glitchTimerStarted = True
 			ElseIf TimerDiff($glitchTimer) > 150000 Then ; 2,5 minutes max time for detection of pathological situation
-				; in case pathological situation happened, make a full sweep with team around baby dragon's location
+				; in case pathological situation happened, make a full sweep with team around baby dragon location
 				SweepAroundBabyDragonLocation()
 				$glitchTimerStarted = False
 			EndIf
@@ -196,7 +194,7 @@ Func GlintChallenge()
 	; Tripled to secure the looting of chest
 	For $i = 1 To 3
 		MoveAggroAndKill($BROTHERHOOD_CHEST_X, $BROTHERHOOD_CHEST_Y)
-		Local $brotherhoodChest = ScanForChests($RANGE_COMPASS, True, $BROTHERHOOD_CHEST_X, $BROTHERHOOD_CHEST_Y, $BROTHERHOOD_CHEST_GADGETID)
+		Local $brotherhoodChest = ScanForChests($RANGE_COMPASS, True, $BROTHERHOOD_CHEST_X, $BROTHERHOOD_CHEST_Y, $GADGETID_BROTHERHOOD_CHEST)
 		ChangeTarget($brotherhoodChest)
 		ActionInteract()
 		RandomSleep(2500)
@@ -237,5 +235,5 @@ EndFunc
 
 
 Func IsBrotherhoodChestSpawned()
-	Return Null <> ScanForChests($RANGE_COMPASS, True, $BROTHERHOOD_CHEST_X, $BROTHERHOOD_CHEST_Y, $BROTHERHOOD_CHEST_GADGETID)
+	Return Null <> ScanForChests($RANGE_COMPASS, True, $BROTHERHOOD_CHEST_X, $BROTHERHOOD_CHEST_Y, $GADGETID_BROTHERHOOD_CHEST)
 EndFunc

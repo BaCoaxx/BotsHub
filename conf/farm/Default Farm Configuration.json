@@ -7,6 +7,7 @@
 	"run": {
 		"loop_mode": true,
 		"hard_mode": true,
+		"share_memory": false,
 		"farm_materials_mid_run": false,
 		"consume_consumables": true,
 		"use_consets": false,
@@ -18,7 +19,7 @@
 		"buy_faction_scrolls": false,
 		"weapon_slot": 0,
 		"bags_count": 5,
-		"district": "Random EU",
+		"district": "Default",
 		"disable_rendering": false,
 		"go_offline": false,
 		"flash_whisper": false

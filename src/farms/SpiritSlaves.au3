@@ -79,8 +79,7 @@ EndFunc
 Func SetupPlayerSpiritSlavesFarm()
 	Info('Setting up player build skill bar')
 	If DllStructGetData(GetMyAgent(), 'Primary') == $ID_RITUALIST Then
-		LoadSkillTemplate($SPIRIT_SLAVES_RITUALIST_SKILLBAR)
-		RandomSleep(250)
+		LoadSkillTemplateIfNeeded($SPIRIT_SLAVES_RITUALIST_SKILLBAR)
 	Else
 		Warn('Should run this farm as a ritualist')
 		Return $FAIL
@@ -91,7 +90,7 @@ EndFunc
 
 Func RunToShatteredRavines()
 	TravelToOutpost($ID_BONE_PALACE, $district_name)
-	; Exiting to Joko's Domain
+	; Exiting to Jokos Domain
 	MoveTo(-14500, 6000)
 	Move(-14800, 3400)
 	RandomSleep(1000)
@@ -101,7 +100,7 @@ Func RunToShatteredRavines()
 	UseSkillEx($SS_MINDBENDER)
 	MoveTo(-12650, 2600)
 	MoveTo(-10950, 4250)
-	; Going to wurm's spoor
+	; Going to wurms spoor
 	ChangeTarget(GetNearestSignpostToCoords(-10950, 4250))
 	RandomSleep(500)
 	Info('Taking wurm')
@@ -153,16 +152,14 @@ Func SpiritSlavesFarmLoop()
 	Local $topPosition = [-8900, -4600]
 	; 5 Groups to kill
 	For $group = 1 To 5
-		If $group <> 4 Then MoveTo(-7465, -7900, 0, 0)
+		If $group <> 4 Then MoveTo(-7465, -7900, 0)
 		; For the first group, we need the allies to die first	-	First wave
 		If $group == 1 Then WaitForAlliesDead()
 		Local $balled = True
 		; The bottom group comes only the first three times		-	First, Second and Third waves
 		If $group >= 1 And $group <= 3 Then $balled = WaitForFoesBall($bottomPosition)
-		; The top group comes twice - 							-	Second and Fourth waves
+		; The top group comes twice -							-	Second and Fourth waves
 		If $group == 2 Or $group == 5 Then $balled = WaitForFoesBall($topPosition)
-		; FIXME: Sometimes groups get in range of player - we could fix with starting the fight
-		; for now we just die and restart the zone
 		If IsPlayerDead() Then Return RestartAfterDeath()
 		Info('Killing group ' & $group)
 		If ($balled ? FarmGroup() : QuickFarmGroup()) == $FAIL Then Return RestartAfterDeath()

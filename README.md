@@ -39,25 +39,30 @@ To use it:
 
 ### Farms
 
-| Farm									| Purpose / Drops											|
-| ------------------------------------- | --------------------------------------------------------- |
-| Raptors								| Festive items, golds, materials, Asura points				|
-| Vaettirs								| Festive items, golds, materials, Norn points				|
-| Cathedral of Flames (Cryptos)			| Rin Relics, Diessa Chalices, bones						|
-| Jaya Bluffs (Sensali)					| Feathers, bones											|
-| Drazach Thicket (DragonMoss)			| Fibers, Gothic Defender, Echovald Shield, Ornate Shield	|
-| Wajjun Bazaar (Mantids)				| Celestial weapons, chitin, dust							|
-| Moddok Crevice (Corsairs)				| Runes, Colossal Scimitar, Q8								|
-| Missing Daughter (Jade Brotherhood)	| Q8 items, jade bracelets									|
-| Fish in a Barrel (Kournans)			| Q8 items, runes											|
-| Spirit Slaves							| Q8 items, dust, bones										|
-| Minotaurs								| Materials													|
-| Auspicious Beginnings					| War Supplies, festive items, gold, Vanguard points		|
-| A Chance Encounter					| Ministerial Commendations, faction skins					|
-| Presearing Iris						| Iris														|
-| Nexus Challenge						| Mysterious armor hero pieces								|
-| Dajkah Inlet Challenge				| Sunspear armor hero pieces								|
-| Glint’s Challenge						| Cloth of Brotherhood, hero armor, Destroyer cores			|
+| Farm									| Purpose / Drops																|
+| ------------------------------------- | ----------------------------------------------------------------------------- |
+| A Chance Encounter					| Ministerial Commendations, faction skins										|
+| Auspicious Beginnings					| War Supplies, festive items, gold, Vanguard points							|
+| Cathedral of Flames (Cryptos)			| Rin Relics, Diessa Chalices, bones											|
+| Dajkah Inlet Challenge				| Sunspear armor hero pieces													|
+| Drake Flesh							| Drake flesh (kebob), golds													|
+| Drazach Thicket (DragonMoss)			| Fibers, Gothic Defender, Echovald Shield, Ornate Shield						|
+| Fish in a Barrel (Kournans)			| Q8 items, runes																|
+| Glint’s Challenge						| Cloth of Brotherhood, hero armor, Destroyer cores								|
+| Jaya Bluffs (Sensali)					| Feathers, bones																|
+| Kappa									| Kappa shields, Celestial weapons, bones										|
+| Minotaurs								| Materials																		|
+| Missing Daughter (Jade Brotherhood)	| Q8 items, jade bracelets														|
+| Moddok Crevice (Corsairs)				| Runes, Colossal Scimitar, Q8													|
+| Nexus Challenge						| Mysterious armor hero pieces													|
+| Presearing Iris						| Iris																			|
+| Raptors								| Festive items, golds, materials, Asura points									|
+| Skale Fins							| Skale fins (soup), low reqs													|
+| Skrees								| Spears, feathers, paragon normal and elite tomes								|
+| Spirit Slaves							| Q8 items, dust, bones															|
+| Vaettirs								| Festive items, golds, materials, Norn points									|
+| Wajjun Bazaar (Mantids)				| Celestial weapons, chitin, dust												|
+| Zodiac								| Zodiac weapons, Ironwing bows, Vertebreakers, Nephilim Gavels, Amber chunks	|
 
 ### Vanquishes / Titles
 
@@ -80,7 +85,7 @@ To use it:
 | Area							| Drops																	|
 | ----------------------------- | --------------------------------------------------------------------- |
 | Bogroot						| Froggy																|
-| Sepulchre of Dragrimmar (SoO)	| Dragon Bone Staff														|
+| Shards of Orr (SoO)			| Dragon Bone Staff														|
 | Slaver’s Exile				| Voltaic Spears														|
 | FoW							| Obsidian Shards, Obsidian Edge, Shadow weapons						|
 | FoW – Tower of Courage		| Obsidian Shards, dust													|
@@ -90,6 +95,7 @@ To use it:
 | Stygian Veil					| Stygian Gemstones														|
 | Tunnels of the Forsaken		| E-blade																|
 | Underworld					| Globs of Ectoplasm													|
+| Underworld Pantheon			| Globs of Ectoplasm													|
 | Kilroy						| Alcohol, Glacial Blades, Stone Summit Shield, Summit Warlord Shield	|
 
 ### Chest Runs
@@ -103,6 +109,7 @@ To use it:
 ### Others
 - Follower bot
 - Inventory management
+- Automatic Tonic consumer
 
 ---
 
@@ -140,6 +147,12 @@ Too many possible causes. Please provide:
 - When it stopped (during farm, inventory, travel, etc.)
 - Last console logs
 - Whether it happens consistently
+</details>
+
+<details>
+<summary><strong>Q: The bot is stuck talking to an NPC and can't enter zone/mission.</strong></summary>
+
+This sometimes happens - abandon the related quest and restart the bot, this will fix it.
 </details>
 
 <details>
@@ -208,11 +221,15 @@ You are welcome to create and contribute new bots 👍
 
 ## 📌 Planned Features
 
-- 💡🛠️ **Fix Spirit Slaves farm**
+- 💡🕓 **Bloodstone caves Warrior farm**
+- 💡🕓 **Luxon assassin farm**
 - 💡🕓 **Improve the Pongmei chest farm with Tasca chest farm capabilities**
-- 🧠💭 **Other consumables farms (Drake Kabob, Skalefin Soup and Pahnai Salad)** - 1 request
+- 💡🕓 **Vermin farm**
+- 💡💭 **Bandit raid**
+- 💡💭 **Pahnai Salad - Iboga Petals farm**
+- 🧠💭 **Bightclaw Farm - 20/20 restoration wand, doable with Any/Rt SoS: https://www.youtube.com/watch?v=dwaX0RDY80M**
+- 🧠💭 **Vloxen Excavations chest run - Glacial Blade: https://www.youtube.com/watch?v=9kXejK7F-ao**
 - 🧠💭 **Nicholas the traveler items (gifties)**
-- 🧠💭 **Bandit raid**
 - 🧠💭 **Improve crash recovery**
 
 **Legend:**  
@@ -228,7 +245,7 @@ Status → ✅ Done | 🔄 In progress | 🛠️ Broken | 🕓 Planned | 💭 Wi
 ---
 
 ## License
-Apache License 2.0 ⚖️ — see the [LICENSE](LICENSE) file
+Apache License 2.0 ⚖️ - see the [LICENSE](LICENSE) file
 
 ---
 

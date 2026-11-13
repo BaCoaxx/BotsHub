@@ -34,14 +34,14 @@
 
 
 Global Const $PI = 3.14
-Global Const $RANGE_ADJACENT=156, $RANGE_NEARBY=240, $RANGE_AREA=312, $RANGE_EARSHOT=1000, $RANGE_SPELLCAST=1085, $RANGE_LONGBOW=1250, $RANGE_SPIRIT=2500, $RANGE_COMPASS=5000
-Global Const $RANGE_ADJACENT_2=156^2, $RANGE_NEARBY_2=240^2, $RANGE_AREA_2=312^2, $RANGE_EARSHOT_2=1000^2, $RANGE_SPELLCAST_2=1085^2, $RANGE_LONGBOW_2=1250^2, $RANGE_SPIRIT_2=2500^2, $RANGE_COMPASS_2=5000^2
+Global Const $RANGE_ADJACENT = 156,		$RANGE_NEARBY = 240,		$RANGE_AREA = 312,		$RANGE_EARSHOT = 1000,		$RANGE_SPELLCAST = 1085,		$RANGE_LONGBOW = 1250,		$RANGE_SPIRIT = 2500,		$RANGE_COMPASS = 5000
+Global Const $RANGE_ADJACENT_2 = 156^2,	$RANGE_NEARBY_2 = 240^2,	$RANGE_AREA_2 = 312^2,	$RANGE_EARSHOT_2 = 1000^2,	$RANGE_SPELLCAST_2 = 1085^2,	$RANGE_LONGBOW_2 = 1250^2,	$RANGE_SPIRIT_2 = 2500^2,	$RANGE_COMPASS_2 = 5000^2
 ; Mobs aggro correspond to earshot range + hitbox size (10 diameter) - bosses have larger aggro range
 Global Const $MOB_AGGRO_RANGE = $RANGE_EARSHOT + 10
 ; Aggro range of user in order to surprise mobs
-Global Const $PLAYER_AGGRO_RANGE= $RANGE_SPELLCAST + 100
+Global Const $PLAYER_AGGRO_RANGE = $RANGE_SPELLCAST + 100
 ; Wider aggro range of user used for clears
-Global Const $WIDE_PLAYER_AGGRO_RANGE= $RANGE_EARSHOT * 1.5
+Global Const $WIDE_PLAYER_AGGRO_RANGE = $RANGE_EARSHOT * 1.5
 ; Speed of a character without boosts ~290/s
 Global Const $PLAYER_DEFAULT_SPEED = 290
 
@@ -65,23 +65,24 @@ EndFunc
 
 
 ;~ Move to a location and wait until you reach it.
-Func MoveTo($X, $Y, $precision = 25, $random = 50, $doWhileRunning = Null)
+Func MoveTo($X, $Y, $precision = 100, $doWhileRunning = Null)
 	Local $blockedCount = 0
 	Local $mapID = GetMapID()
-	Local $destinationX = $X + Random(-$random, $random)
-	Local $destinationY = $Y + Random(-$random, $random)
-
-	Move($destinationX, $destinationY)
-
 	Local $me = GetMyAgent()
-	While GetDistanceToPoint($me, $destinationX, $destinationY) > $precision
+	; Precision can't be smaller than 1 - we set it to 2 by precaution
+	If $precision < 2 Then $precision = 2
+	While GetDistanceToPoint($me, $X, $Y) > $precision
 		If $doWhileRunning <> Null Then $doWhileRunning()
+		Move($X, $Y)
 		PingSleep(100)
 		If Not IsPlayerMoving() Then
 			$blockedCount += 1
-			$destinationX = $X + Random(-$random, $random)
-			$destinationY = $Y + Random(-$random, $random)
-			Move($destinationX, $destinationY)
+			If $blockedCount > 3 Then
+				; We need to have distance to move larger than distance character can achieve
+				; (otherwise character will reach the point and stop moving)
+				MoveRadial($X, $Y, $RANGE_AREA * 1.5)
+				Sleep(1000)
+			EndIf
 		EndIf
 		$me = GetMyAgent()
 		If GetMapID() <> $mapID Then ExitLoop
@@ -140,8 +141,9 @@ EndFunc
 
 
 ;~ Travel to specified map and specified district
-Func DistrictTravel($mapID, $district = 'Random EU')
+Func DistrictTravel($mapID, $district = 'Default')
 	If GetMapID() == $mapID Then Return
+	If $district == 'Default' Then $district = GetDistrictFromUTCOffset()
 	Switch $district
 		Case 'Random'
 			RandomDistrictTravel($mapID, 0, 11)
@@ -267,22 +269,26 @@ Func EnterFissureOfWoe()
 					MoveTo(-4650, 18700)
 					MoveTo(-3600, 18700)
 					MoveTo(-3100, 18000)
-					MoveTo(-2500, 18700)
+					MoveTo(-2400, 18750)
 				EndIf
-				$npcCoordinates[0] = -2500
-				$npcCoordinates[1] = 18700
+				$npcCoordinates[0] = -2400
+				$npcCoordinates[1] = 18750
 			Case $ID_CHANTRY_OF_SECRETS
-				MoveTo(-9870, 990)
-				If GetDistanceToPoint(GetMyAgent(), -9870, 990) > $RANGE_ADJACENT Then
+				MoveTo(-9900, 1000)
+				If GetDistanceToPoint(GetMyAgent(), -9900, 1000) > $RANGE_ADJACENT Then
 					MoveTo(-10400, 770)
-					MoveTo(-9870, 990)
+					MoveTo(-9900, 1000)
 				EndIf
-				$npcCoordinates[0] = -9870
-				$npcCoordinates[1] = 990
+				$npcCoordinates[0] = -9900
+				$npcCoordinates[1] = 1000
 		EndSwitch
-		SendChat('/kneel', '')
-		PingSleep(3000)
-		GoToNPC(GetNearestNPCToCoords($npcCoordinates[0], $npcCoordinates[1]))
+		Local $championOfBalthazar = GetNearestNPCToCoords($npcCoordinates[0], $npcCoordinates[1])
+		If $championOfBalthazar == Null Or GetDistanceToPoint($championOfBalthazar, $npcCoordinates[0], $npcCoordinates[1]) > $RANGE_ADJACENT Then
+			SendChat('/kneel', '')
+			PingSleep(3000)
+			$championOfBalthazar = GetNearestNPCToCoords($npcCoordinates[0], $npcCoordinates[1])
+		EndIf
+		GoToNPC($championOfBalthazar)
 		PingSleep(750)
 		Dialog(0x85)
 		PingSleep(750)
@@ -316,9 +322,9 @@ Func EnterUnderworld()
 		Switch GetMapID()
 			Case $ID_TEMPLE_OF_THE_AGES
 				MoveTo(-4170, 19759)
-				MoveTo(-4124, 19829)
-				$npcCoordinates[0] = -4124
-				$npcCoordinates[1] = 19829
+				MoveTo(-4100, 19800)
+				$npcCoordinates[0] = -4100
+				$npcCoordinates[1] = 19800
 			Case $ID_CHANTRY_OF_SECRETS
 				MoveTo(-9000, 3900)
 				If GetDistanceToPoint(GetMyAgent(), -9000, 3900) > $RANGE_ADJACENT Then
@@ -328,9 +334,13 @@ Func EnterUnderworld()
 				$npcCoordinates[0] = -9000
 				$npcCoordinates[1] = 3900
 		EndSwitch
-		SendChat('/kneel', '')
-		PingSleep(3000)
-		GoToNPC(GetNearestNPCToCoords($npcCoordinates[0], $npcCoordinates[1]))
+		Local $voiceOfGrenth = GetNearestNPCToCoords($npcCoordinates[0], $npcCoordinates[1])
+		If $voiceOfGrenth == Null Or GetDistanceToPoint($voiceOfGrenth, $npcCoordinates[0], $npcCoordinates[1]) > $RANGE_ADJACENT Then
+			SendChat('/kneel', '')
+			PingSleep(3000)
+			$voiceOfGrenth = GetNearestNPCToCoords($npcCoordinates[0], $npcCoordinates[1])
+		EndIf
+		GoToNPC($voiceOfGrenth)
 		PingSleep(750)
 		Dialog(0x85)
 		PingSleep(750)
@@ -345,9 +355,31 @@ Func EnterUnderworld()
 EndFunc
 
 
-Func EnterUrgozsWarren()
-	TravelToOutpost($ID_EMBARK_BEACH, $district_name)
-	If $run_options_cache['run.use_scrolls'] Then
+Func EnterUrgozsWarren($forceScrollUse)
+	; Talk to Vash in Kaineng Center - only 1 week out of 9
+	If IsFactionsEliteBonusWeek() Then
+		Info('Bonus week means free entry :D')
+		If GetMapID() <> $ID_KAINENG_CENTER Then TravelToOutpost($ID_KAINENG_CENTER, $district_name)
+		MoveTo(3096, -1984)
+		GoToNPC(GetNearestNPCToCoords(4050, -2150))
+		PingSleep(750)
+		Dialog(0x81)
+		PingSleep(750)
+		Dialog(0x800009)
+		PingSleep(750)
+		Dialog(0x80000B)
+		WaitMapLoading($ID_URGOZS_WARREN)
+		If GetMapID() <> $ID_URGOZS_WARREN Then
+			Warn('Something went wrong with Vash.')
+			Return $PAUSE
+		EndIf
+	ElseIf Not $forceScrollUse And Not $run_options_cache['run.use_scrolls'] Then
+		Error('Trying to enter Urgoz Warren without enabling scroll usage.')
+		Return $FAIL
+	Else
+		; Move to House Zu Heltzer and use a scroll
+		TravelToOutpost($ID_HOUSE_ZU_HELTZER, $district_name)
+		;TravelToOutpost($ID_EMBARK_BEACH, $district_name)
 		Info('Using scroll to enter Urgoz Warren')
 		If UseScroll($ID_URGOZ_SCROLL) == $SUCCESS Then
 			WaitMapLoading($ID_URGOZS_WARREN)
@@ -355,17 +387,40 @@ Func EnterUrgozsWarren()
 				Warn('Used scroll but still could not enter Urgoz Warren. Ensure that player has correct scroll in inventory')
 				Return $PAUSE
 			EndIf
+		Else
+			Error('Trying to enter Urgoz Warren without scrolls.')
+			Return $FAIL
 		EndIf
-	Else
-		Return $FAIL
 	EndIf
 	Return $SUCCESS
 EndFunc
 
 
-Func EnterTheDeep()
-	TravelToOutpost($ID_EMBARK_BEACH, $district_name)
-	If $run_options_cache['run.use_scrolls'] Then
+Func EnterTheDeep($forceScrollUse)
+	; Talk to Eurayle in Kaineng Center - only 1 week out of 9
+	If IsFactionsEliteBonusWeek() Then
+		Info('Bonus week means free entry :D')
+		If GetMapID() <> $ID_KAINENG_CENTER Then TravelToOutpost($ID_KAINENG_CENTER, $district_name)
+		MoveTo(3095, -1294)
+		GoToNPC(GetNearestNPCToCoords(4050, -930))
+		PingSleep(750)
+		Dialog(0x81)
+		PingSleep(750)
+		Dialog(0x800009)
+		PingSleep(750)
+		Dialog(0x80000B)
+		WaitMapLoading($ID_THE_DEEP)
+		If GetMapID() <> $ID_THE_DEEP Then
+			Warn('Something went wrong with Eurayle.')
+			Return $PAUSE
+		EndIf
+	ElseIf Not $forceScrollUse And Not $run_options_cache['run.use_scrolls'] Then
+		Error('Trying to enter The Deep without enabling scroll usage.')
+		Return $FAIL
+	Else
+		; Move to Cavalon and use a scroll
+		TravelToOutpost($ID_CAVALON, $district_name)
+		;TravelToOutpost($ID_EMBARK_BEACH, $district_name)
 		Info('Using scroll to enter the Deep')
 		If UseScroll($ID_DEEP_SCROLL) == $SUCCESS Then
 			WaitMapLoading($ID_THE_DEEP)
@@ -375,6 +430,7 @@ Func EnterTheDeep()
 			EndIf
 		EndIf
 	Else
+		Error('Trying to enter the Deep without scrolls.')
 		Return $FAIL
 	EndIf
 	Return $SUCCESS
@@ -382,6 +438,7 @@ EndFunc
 
 
 Func NPCCoordinatesInTown($town = $ID_EYE_OF_THE_NORTH, $type = 'Merchant')
+	If $town == $ID_EMBARK_BEACH Then MoveTo(1950, 0)
 	Local $coordinates[] = [-1, -1]
 	Switch $type
 		Case 'Merchant'
@@ -392,6 +449,12 @@ Func NPCCoordinatesInTown($town = $ID_EYE_OF_THE_NORTH, $type = 'Merchant')
 				Case $ID_EYE_OF_THE_NORTH
 					$coordinates[0] = -2700
 					$coordinates[1] = 1075
+				Case $ID_GREAT_TEMPLE_OF_BALTHAZAR
+					$coordinates[0] = -4800
+					$coordinates[1] = -7400
+				Case $ID_WIZARDS_ISLE
+					$coordinates[0] = 3550
+					$coordinates[1] = 9050
 				Case Else
 					Warn('For provided town coordinates of that NPC are not mapped yet')
 			EndSwitch
@@ -403,6 +466,9 @@ Func NPCCoordinatesInTown($town = $ID_EYE_OF_THE_NORTH, $type = 'Merchant')
 				Case $ID_EYE_OF_THE_NORTH
 					$coordinates[0] = -1850
 					$coordinates[1] = 875
+				Case $ID_WIZARDS_ISLE
+					$coordinates[0] = 3750
+					$coordinates[1] = 10000
 				Case Else
 					Warn('For provided town coordinates of that NPC are not mapped yet')
 			EndSwitch
@@ -414,6 +480,9 @@ Func NPCCoordinatesInTown($town = $ID_EYE_OF_THE_NORTH, $type = 'Merchant')
 				Case $ID_EYE_OF_THE_NORTH
 					$coordinates[0] = -2100
 					$coordinates[1] = 1125
+				Case $ID_WIZARDS_ISLE
+					$coordinates[0] = 3250
+					$coordinates[1] = 9950
 				Case Else
 					Warn('For provided town coordinates of that NPC are not mapped yet')
 			EndSwitch
@@ -484,7 +553,7 @@ EndFunc
 
 
 ;~ Find and open chests in the given range (earshot by default)
-Func FindAndOpenChests($range = $RANGE_EARSHOT, $defendFunction = Null, $blockedFunction = Null)
+Func FindAndOpenChests($range = $RANGE_EARSHOT, $survivalFunction = Null, $blockedFunction = Null)
 	If FindInInventory($ID_LOCKPICK)[0] == 0 Then
 		WarnOnce('No lockpicks available to open chests')
 		Return Null
@@ -505,9 +574,9 @@ Func FindAndOpenChests($range = $RANGE_EARSHOT, $defendFunction = Null, $blocked
 			;Much better solution BUT character does not defend itself while going to chest + function kind of sucks
 			;GoToSignpost($agent)
 			;Final solution, caution, chest is considered as signpost by game client
-			GoToSignpostWhileDefending($agent, $defendFunction, $blockedFunction)
+			GoToSignpostSafely($agent, $survivalFunction, $blockedFunction)
 			If IsPlayerDead() Then Return
-			RandomSleep(250)
+			RandomSleep(200)
 			OpenChest()
 			RandomSleep(1000)
 			If IsPlayerDead() Then Return
@@ -538,28 +607,35 @@ EndFunc
 
 
 ;~ Go to signpost and wait until you reach it.
-Func GoToSignpostWhileDefending($signpost, $defendFunction = Null, $blockedFunction = Null)
+Func GoToSignpostSafely($signpost, $survivalFunction = Null, $blockedFunction = Null)
 	Local $me = GetMyAgent()
 	Local $x = DllStructGetData($signpost, 'X')
 	Local $y = DllStructGetData($signpost, 'Y')
 	Local $blocked = 0
 	While IsPlayerAlive() And GetDistance($me, $signpost) > 250 And $blocked < 15
+		If $survivalFunction <> Null Then $survivalFunction()
 		Move($x, $y)
 		PingSleep(100)
-		If $defendFunction <> Null Then $defendFunction()
-		$me = GetMyAgent()
 		If Not IsPlayerMoving() Then
-			If $blockedFunction <> Null And $blocked > 10 Then
-				$blockedFunction()
-			EndIf
+			If $blockedFunction <> Null And $blocked > 10 Then $blockedFunction()
 			$blocked += 1
-			Move($x, $y)
 		EndIf
-		PingSleep(100)
 		$me = GetMyAgent()
 	WEnd
 	GoSignpost($signpost)
 	PingSleep(100)
+EndFunc
+
+
+Func OpenDungeonChestAt($x, $y)
+	Local $chest = GetNearestSignpostToCoords($x, $y)
+	ChangeTarget($chest)
+	RandomSleep(500)
+	GoToSignpost($chest)
+	RandomSleep(2000)
+	ActionInteract()
+	RandomSleep(3000)
+	CheckAndSendStuckCommand()
 EndFunc
 #EndRegion Find and open Chests
 
@@ -602,11 +678,20 @@ EndFunc
 
 
 ;~ Aggro a foe
-Func AggroAgent($targetAgent)
-	While IsPlayerAlive() And GetDistance(GetMyAgent(), $targetAgent) > $RANGE_EARSHOT - 100
-		Move(DllStructGetData($targetAgent, 'X'), DllStructGetData($targetAgent, 'Y'))
-		RandomSleep(200)
+Func AggroAgent($agent)
+	Local $me = GetMyAgent()
+	Local $agentID = DllStructGetData($agent, 'ID')
+	Local $startingAnimationID = DllStructGetData($agent, 'AnimationID')
+	Local $startingAnimationCode = DllStructGetData($agent, 'AnimationCode')
+	While (DllStructGetData($agent, 'AnimationID') == $startingAnimationID Or DllStructGetData($agent, 'AnimationCode') == $startingAnimationCode) _
+		Or GetDistance($me, $agent) > $MOB_AGGRO_RANGE
+		Move(DllStructGetData($agent, 'X'), DllStructGetData($agent, 'Y'))
+		RandomSleep(100)
+		$agent = GetAgentByID($agentID)
+		$me = GetMyAgent()
+		If IsPlayerDead() Then Return False
 	WEnd
+	Return True
 EndFunc
 
 
@@ -650,64 +735,64 @@ Func GetAlmostInRangeOfAgent($targetAgent, $proximity = $PLAYER_AGGRO_RANGE)
 
 	Local $goX = $myX + ($targetX - $myX) * (1 - $ratio)
 	Local $goY = $myY + ($targetY - $myY) * (1 - $ratio)
-	MoveTo($goX, $goY, 25, 0)
+	MoveTo($goX, $goY)
 EndFunc
 
 
 ;~ Move to specified position while defending and trying to avoid body block and trying to avoid getting stuck
-Func MoveAvoidingBodyBlock($destinationX, $destinationY, $options = $default_move_defend_options)
+Func MoveAvoidingBodyBlock($destinationX, $destinationY, $options = $default_move_options)
 	Local $me = Null, $target = Null, $chest = Null
 	Local $blocked = 0, $distance = 0
 	Local $myX, $myY, $randomAngle, $offsetX, $offsetY
 
-	Local $openChests			= $options['openChests'] <> Null ?				$options['openChests'] : False
-	Local $chestOpenRange		= $options['chestOpenRange'] <> Null ?			$options['chestOpenRange'] : $RANGE_SPIRIT
-	Local $defendFunction		= $options['defendFunction'] <> Null ?			$options['defendFunction'] : Null
-	Local $moveTimeOut			= $options['moveTimeOut'] <> Null ?				$options['moveTimeOut'] : 2 * 60 * 1000
-	Local $randomFactor			= $options['randomFactor'] <> Null ?			$options['randomFactor'] : 100
-	Local $hosSkillSlot			= $options['hosSkillSlot'] <> Null ?			$options['hosSkillSlot'] : 0
-	Local $deathChargeSkillSlot	= $options['$deathChargeSkillSlot'] <> Null ?	$options['$deathChargeSkillSlot'] : 0
-	$randomFactor = _Min(_Max($randomFactor, 0), $RANGE_NEARBY) ; $randomFactor in range [0;$RANGE_NEARBY]
+	Local $openChests				= $options['openChests'] <> Null ?				$options['openChests'] : False
+	Local $chestOpenRange			= $options['chestOpenRange'] <> Null ?			$options['chestOpenRange'] : $RANGE_SPIRIT
+	Local $movementRoutine			= $options['movementRoutine'] <> Null ?			$options['movementRoutine'] : Null
+	Local $moveTimeout				= $options['moveTimeout'] <> Null ?				$options['moveTimeout'] : 2 * 60 * 1000
+	Local $moveVariance				= $options['moveVariance'] <> Null ?			$options['moveVariance'] : 100
+	Local $skillSlotHoS				= $options['skillSlotHoS'] <> Null ?			$options['skillSlotHoS'] : 0
+	Local $skillSlotDeathsCharge	= $options['skillSlotDeathsCharge'] <> Null ?	$options['skillSlotDeathsCharge'] : 0
+	$moveVariance = _Min(_Max($moveVariance, 0), $RANGE_NEARBY) ; $moveVariance in range [0;$RANGE_NEARBY]
 
 	Local $moveTimer = TimerInit()
-	Local $chatStuckTimer = TimerInit()
-	MoveRadial($destinationX, $destinationY, $randomFactor)
+	MoveRadial($destinationX, $destinationY, $moveVariance)
 
 	While IsPlayerAlive() And GetDistanceToPoint(GetMyAgent(), $destinationX, $destinationY) > $RANGE_NEARBY
-		If $defendFunction <> Null Then $defendFunction()
-		If TimerDiff($moveTimer) > $moveTimeOut Then Return $FAIL
+		If $movementRoutine <> Null Then $movementRoutine()
+		If TimerDiff($moveTimer) > $moveTimeout Then Return $FAIL
 
 		If IsPlayerAlive() And Not IsPlayerMoving() And Not GetIsKnocked(GetMyAgent()) Then
 			$blocked += 1
 			$me = GetMyAgent()
 
 			If $blocked < 6 Then
-				MoveRadial($destinationX, $destinationY, $randomFactor)
+				MoveRadial($destinationX, $destinationY, $moveVariance)
 				PingSleep(50)
 			Else
 				$myX = DllStructGetData($me, 'X')
 				$myY = DllStructGetData($me, 'Y')
-				MoveRadial($myX, $myY, 300)
-				PingSleep(1000)
+				; Distance must be higher than distance character can achieve, otherwise character will reach the point and stop moving
+				MoveRadial($myX, $myY, $RANGE_AREA * 1.5)
+				RandomSleep(1000)
 
 				If $blocked > 8 Then CheckAndSendStuckCommand()
 				If $blocked > 10 Then
 					; If Heart of Shadow skill is available then use it to get unstuck
-					If $hosSkillSlot > 0 And IsRecharged($hosSkillSlot) And GetEnergy() > 5 Then
-						UseSkillEx($hosSkillSlot)
+					If $skillSlotHoS > 0 And IsRecharged($skillSlotHoS) And GetEnergy() > 5 Then
+						UseSkillEx($skillSlotHoS)
 						PingSleep(50)
-						MoveRadial($destinationX, $destinationY, $randomFactor)
-					; If Death's Charge skill is available then use it to get unstuck
-					ElseIf $deathChargeSkillSlot > 0 And CountFoesInRangeOfAgent(GetMyAgent(), $RANGE_SPELLCAST) > 0 And IsRecharged($deathChargeSkillSlot) And GetEnergy() > 5 Then
+						MoveRadial($destinationX, $destinationY, $moveVariance)
+					; If Death Charge skill is available then use it to get unstuck
+					ElseIf $skillSlotDeathsCharge > 0 And CountFoesInRangeOfAgent(GetMyAgent(), $RANGE_SPELLCAST) > 0 And IsRecharged($skillSlotDeathsCharge) And GetEnergy() > 5 Then
 						$target = GetFurthestNPCInRangeOfCoords($ID_ALLEGIANCE_FOE, DllStructGetData($me, 'X'), DllStructGetData($me, 'Y'), $RANGE_SPELLCAST)
-						UseSkillEx($deathChargeSkillSlot, $target)
+						UseSkillEx($skillSlotDeathsCharge, $target)
 						PingSleep(50)
-						MoveRadial($destinationX, $destinationY, $randomFactor)
+						MoveRadial($destinationX, $destinationY, $moveVariance)
 					EndIf
 				EndIf
 			EndIf
 		Else
-			MoveRadial($destinationX, $destinationY, $randomFactor)
+			MoveRadial($destinationX, $destinationY, $moveVariance)
 			If $blocked > 0 Then
 				$blocked = 0
 				; player started moving, after being stuck but maybe player is rubberbanding? Therefore checking it
@@ -994,36 +1079,35 @@ EndFunc
 
 #Region Map Clearing Utilities
 Global $default_move_aggro_kill_options[]
-$default_move_aggro_kill_options['fightFunction']		= KillFoesInArea
+$default_move_aggro_kill_options['fightHandler']		= KillFoesInArea
 $default_move_aggro_kill_options['fightRange']			= $RANGE_EARSHOT * 1.5
+$default_move_aggro_kill_options['fightTimeout']		= 5 * 60 * 1000
 $default_move_aggro_kill_options['flagHeroesOnFight']	= False
-$default_move_aggro_kill_options['unstuckFunction']		= TryToGetUnstuck
+$default_move_aggro_kill_options['unstuckHandler']		= TryToGetUnstuck
 $default_move_aggro_kill_options['callTarget']			= True
-$default_move_aggro_kill_options['priorityMobs']		= False
+$default_move_aggro_kill_options['priorityTargeting']	= False
 $default_move_aggro_kill_options['skillsCostMap']		= Null
-$default_move_aggro_kill_options['skillsCastTimeMap']	= Null
-$default_move_aggro_kill_options['lootInFights']		= False
+;$default_move_aggro_kill_options['skillsCastTimeMap']	= Null
+$default_move_aggro_kill_options['lootInCombat']		= False
 $default_move_aggro_kill_options['openChests']			= True
 $default_move_aggro_kill_options['chestOpenRange']		= $RANGE_SPIRIT
 $default_move_aggro_kill_options['lootTrappedArea']		= False
 $default_move_aggro_kill_options['ignoreDroppedLoot']	= False
-$default_move_aggro_kill_options['combatFunction']		= UseSkillSequentially
-; default 60 seconds fight duration
-$default_move_aggro_kill_options['fightDuration']		= 60000
+$default_move_aggro_kill_options['killMethod']			= UseSkillSequentially
 
 Global $flag_move_aggro_kill_options					= CloneMap($default_move_aggro_kill_options)
 $flag_move_aggro_kill_options['flagHeroesOnFight']		= True
 
 
-Global $default_move_defend_options[]
-$default_move_defend_options['defendFunction']			= Null
-$default_move_defend_options['moveTimeOut']				= 5 * 60 * 1000
+Global $default_move_options[]
+$default_move_options['movementRoutine']		= Null
+$default_move_options['moveTimeout']			= 5 * 60 * 1000
 ; random factor for movement
-$default_move_defend_options['randomFactor']			= 100
-$default_move_defend_options['hosSkillSlot']			= 0
-$default_move_defend_options['deathChargeSkillSlot']	= 0
-$default_move_defend_options['openChests']				= False
-$default_move_defend_options['chestOpenRange']			= $RANGE_SPIRIT
+$default_move_options['moveVariance']			= 100
+$default_move_options['skillSlotHoS']			= 0
+$default_move_options['skillSlotDeathsCharge']	= 0
+$default_move_options['openChests']				= False
+$default_move_options['chestOpenRange']			= $RANGE_SPIRIT
 
 
 ;~ Waiting until party is alive again - does not wait more than 15s
@@ -1033,38 +1117,6 @@ Func WaitUntilPartyAlive()
 		Sleep(1000)
 		$count += 1
 	WEnd
-EndFunc
-
-
-;~ Stand and fight any enemies that come within specified range within specified time interval (default 60 seconds) in options parameter
-Func WaitAndFightEnemiesInArea($options = $default_move_aggro_kill_options)
-	If IsPlayerAndPartyWiped() Then Return $FAIL
-
-	Local $fightFunction	= $options['fightFunction'] <> Null ?	$options['fightFunction'] : KillFoesInArea
-	Local $fightRange		= $options['fightRange'] <> Null ?		$options['fightRange'] : $WIDE_PLAYER_AGGRO_RANGE
-	Local $fightDuration	= $options['fightDuration'] <> Null ?	$options['fightDuration'] : 60000
-
-	Local $me = GetMyAgent()
-	Local $target = Null
-	Local $distance = 99999
-	Local $foesCount = 999
-	Local $timer = TimerInit()
-
-	While $foesCount > 0 Or TimerDiff($timer) < $fightDuration
-		$target = GetNearestEnemyToAgent($me)
-		If $target <> Null And DllStructGetData($target, 'ID') <> 0 Then
-			$distance = GetDistance($me, $target)
-			If $distance < $fightRange And $fightFunction <> Null Then
-				If $fightFunction($options) == $FAIL Then ExitLoop
-			EndIf
-			If IsPlayerAlive() Then PickUpItems(Null, DefaultShouldPickItem, $fightRange)
-		EndIf
-		RandomSleep(250)
-		$me = GetMyAgent()
-		$foesCount = CountFoesInRangeOfAgent($me, $fightRange)
-		If IsPlayerAndPartyWiped() Then Return $FAIL
-	WEnd
-	Return $SUCCESS
 EndFunc
 
 
@@ -1117,25 +1169,27 @@ EndFunc
 Func MoveAggroAndKill($x, $y, $log = '', $options = $default_move_aggro_kill_options)
 	Local $openChests			= $options['openChests'] <> Null ?			$options['openChests'] : True
 	Local $chestOpenRange		= $options['chestOpenRange'] <> Null ?		$options['chestOpenRange'] : $RANGE_SPIRIT
-	Local $fightFunction		= $options['fightFunction'] <> Null ?		$options['fightFunction'] : KillFoesInArea
+	Local $fightHandler			= $options['fightHandler'] <> Null ?		$options['fightHandler'] : KillFoesInArea
 	Local $fightRange			= $options['fightRange'] <> Null ?			$options['fightRange'] : $WIDE_PLAYER_AGGRO_RANGE
+	Local $fightTimeout			= $options['fightTimeout'] <> Null ?		$options['fightTimeout'] : 10 * 60 * 1000
 	Local $ignoreDroppedLoot	= $options['ignoreDroppedLoot'] <> Null ?	$options['ignoreDroppedLoot'] : False
-	Local $unstuckFunction		= $options['unstuckFunction'] <> Null ?		$options['unstuckFunction'] : TryToGetUnstuck
+	Local $unstuckHandler		= $options['unstuckHandler'] <> Null ?		$options['unstuckHandler'] : TryToGetUnstuck
 
 	IsPlayerStuck(Default, Default, True) ; init internal state
 
 	If $log <> '' Then Info($log)
 
-	Move($x, $y)
-
 	Local $target
 	Local $chest
 	Local $me = GetMyAgent()
+	Local $fightTimer = TimerInit()
 	While GetDistanceToPoint($me, $x, $y) > $RANGE_NEARBY
+		If TimerDiff($fightTimer) > $fightTimeout Then ExitLoop
+
 		; Trigger fight function if a foe comes close enough
 		$target = GetNearestEnemyToAgent($me)
 		If DllStructGetData($target, 'ID') <> 0 And GetDistance($me, $target) < $fightRange Then
-			If $fightFunction($options) == $FAIL Then ExitLoop
+			If $fightHandler($options) == $FAIL Then ExitLoop
 			; FIXME: add rezzing dead party members here
 		EndIf
 
@@ -1145,7 +1199,7 @@ Func MoveAggroAndKill($x, $y, $log = '', $options = $default_move_aggro_kill_opt
 
 		; Stuck verification
 		If IsPlayerStuck() Then
-			If $unstuckFunction($x, $y) == $SUCCESS Then
+			If $unstuckHandler($x, $y) == $SUCCESS Then
 				IsPlayerStuck(Default, Default, True) ; reset stuck detection
 			Else
 				Error('Player detected as stuck and could not get unstuck')
@@ -1170,7 +1224,7 @@ Func MoveAggroAndKill($x, $y, $log = '', $options = $default_move_aggro_kill_opt
 EndFunc
 
 
-; Call this with $reset=True to (re-)initialize it's internal state to track blocked counter and old positions across calls
+; Call this with $reset=True to (re-)initialize its internal state to track blocked counter and old positions across calls
 Func IsPlayerStuck($minMovement = 5, $stuckTicks = 6, $reset = False)
 	Local Static $oldMyX = Null
 	Local Static $oldMyY = Null
@@ -1248,41 +1302,41 @@ EndFunc
 ;~ Kill foes by casting skills from 1 to 8
 Func KillFoesInArea($options = $default_move_aggro_kill_options)
 	Local $fightRange			= $options['fightRange'] <> Null ?			$options['fightRange'] : $WIDE_PLAYER_AGGRO_RANGE
+	Local $fightTimeout			= $options['fightTimeout'] <> Null ?		$options['fightTimeout'] : 10 * 60 * 1000
 	Local $flagHeroes			= $options['flagHeroesOnFight'] <> Null ?	$options['flagHeroesOnFight'] : False
 	Local $callTarget			= $options['callTarget'] <> Null ?			$options['callTarget'] : True
-	Local $priorityMobs			= $options['priorityMobs'] <> Null ?		$options['priorityMobs'] : False
-	Local $lootInFights			= $options['lootInFights'] <> Null ?		$options['lootInFights'] : False
+	Local $priorityTargeting	= $options['priorityTargeting'] <> Null ?	$options['priorityTargeting'] : False
+	Local $lootInCombat			= $options['lootInCombat'] <> Null ?		$options['lootInCombat'] : False
 	Local $lootTrappedArea		= $options['lootTrappedArea'] <> Null ?		$options['lootTrappedArea'] : False
 	Local $ignoreDroppedLoot	= $options['ignoreDroppedLoot'] <> Null ?	$options['ignoreDroppedLoot'] : False
-	Local $combatFunction		= $options['combatFunction'] <> Null ?		$options['combatFunction'] : UseSkillSequentially
+	Local $killMethod			= $options['killMethod'] <> Null ?			$options['killMethod'] : UseSkillSequentially
+	Local $abortCondition		= $options['abortCondition'] <> Null ?		$options['abortCondition'] : Null
 
 	Local $me = GetMyAgent()
 	Local $foesCount = CountFoesInRangeOfAgent($me, $fightRange)
 	Local $target = Null
 	If $flagHeroes Then FanFlagHeroes(260)
 
+	Local $killTimer = TimerInit()
 	While $foesCount > 0
-		If $priorityMobs Then $target = GetHighestPriorityFoe($me, $fightRange)
-		If Not $priorityMobs Or $target == Null Then $target = GetNearestEnemyToAgent($me)
+		If TimerDiff($killTimer) > $fightTimeout Then ExitLoop
+		If $priorityTargeting Then $target = GetHighestPriorityFoe($me, $fightRange)
+		If Not $priorityTargeting Or $target == Null Then $target = GetNearestEnemyToAgent($me)
 		If IsPlayerAlive() And $target <> Null And DllStructGetData($target, 'ID') <> 0 And Not GetIsDead($target) And GetDistance($me, $target) < $fightRange Then
 			ChangeTarget($target)
+			If $callTarget Then CallTargetOnce($target)
 			PingSleep(100)
-			If $callTarget Then
-				CallTargetOnce($target)
-				PingSleep(100)
-			EndIf
-
-			;FightAsPWHeroicRefrain($target, $options)
-			$combatFunction($target, $options)
+			$killMethod($target, $options)
 		EndIf
 
-		If $lootInFights And IsPlayerAlive() Then PickUpItems(Null, DefaultShouldPickItem, $fightRange)
+		If $lootInCombat And IsPlayerAlive() Then PickUpItems(Null, DefaultShouldPickItem, $fightRange)
 		$me = GetMyAgent()
 		$foesCount = CountFoesInRangeOfAgent($me, $fightRange)
 		If IsPlayerAndPartyWiped() Then
 			If $flagHeroes Then CancelAllHeroes()
 			Return $FAIL
 		EndIf
+		If $abortCondition <> Null And $abortCondition() Then Return $SUCCESS
 	WEnd
 	RandomSleep(500)
 	If $flagHeroes Then CancelAllHeroes()
@@ -1292,13 +1346,11 @@ EndFunc
 
 
 Func UseSkillSequentially($target, $options = $default_move_aggro_kill_options)
-	Local $skillsCostMap = $options['skillsCostMap']
+	Local $skillsCostMap		= $options['skillsCostMap']
+	Local $abortCondition		= $options['abortCondition'] <> Null ?		$options['abortCondition'] : Null
 
 	; get as close as possible to target foe to have a surprise effect when attacking
 	GetAlmostInRangeOfAgent($target)
-	Attack($target)
-	PingSleep(100)
-
 	Local $i = 0
 	; casting skills from 1 to 8 in inner loop and leaving it only after target or player is dead
 	While $target <> Null And Not GetIsDead($target) And DllStructGetData($target, 'HealthPercent') > 0 And DllStructGetData($target, 'ID') <> 0 And DllStructGetData($target, 'Allegiance') == $ID_ALLEGIANCE_FOE
@@ -1315,27 +1367,25 @@ Func UseSkillSequentially($target, $options = $default_move_aggro_kill_options)
 		EndIf
 		$target = GetCurrentTarget()
 		If IsPlayerDead() Then ExitLoop
+		If $abortCondition <> Null And $abortCondition() Then Return
 	WEnd
 EndFunc
 
 
-;~ Take current character's position (AND orientation) to flag heroes in a fan position
+;~ Take current character position (AND orientation) to flag heroes in a fan position
 Func FanFlagHeroes($range = 250)
 	; 250 distance larger than nearby distance = 240 to avoid AoE damage and still quite compact formation
 	Local $heroCount = GetHeroCount()
 	; Change your hero locations here
 	Switch $heroCount
-		Case 3
-			; right, left, behind
-			Local $heroFlagPositions[] = [1, 2, 3]
-		Case 5
+		Case 1 To 5
 			; right, left, behind, behind right, behind left
-			Local $heroFlagPositions[] = [1, 2, 3, 4, 5]
-		Case 7
+			Local $heroFlagPositions = [1, 2, 3, 4, 5]
+		Case 6 To 7
 			; right, left, behind, behind right, behind left, way behind right, way behind left
-			Local $heroFlagPositions[] = [1, 2, 6, 3, 4, 5, 7]
+			Local $heroFlagPositions = [1, 2, 6, 3, 4, 5, 7]
 		Case Else
-			Local $heroFlagPositions[0] = []
+			Local $heroFlagPositions = []
 	EndSwitch
 
 	Local $me = GetMyAgent()
@@ -1368,7 +1418,6 @@ Func FanFlagHeroes($range = 250)
 	If $heroCount > 5 Then CommandHero($heroFlagPositions[5], $x + ($rotationY / 2 - 2 * $rotationX) * $distance, $y - (2 * $rotationY + $rotationX / 2) * $distance)
 	; To the left, way behind
 	If $heroCount > 6 Then CommandHero($heroFlagPositions[6], $x - ($rotationY / 2 + 2 * $rotationX) * $distance, $y + ($rotationX / 2 - 2 * $rotationY) * $distance)
-
 EndFunc
 #EndRegion Map Clearing Utilities
 #EndRegion Advanced actions
@@ -1413,7 +1462,7 @@ Func IsDragonFestival()
 EndFunc
 
 
-;~ Halloween/Mad King's Day:						Oct 18 19:00 UTC to Nov 2 08:01 UTC
+;~ Halloween/Mad Kings Day:						Oct 18 19:00 UTC to Nov 2 08:01 UTC
 Func IsHalloweenFestival()
 	Return IsWithinUtcWindow(GetUtcPacked(), PackUtc(10, 18, 19, 0), PackUtc(11, 2, 8, 1))
 EndFunc
@@ -1446,6 +1495,101 @@ EndFunc
 ;~ Packs a (month, day, hour, minute) tuple as MMDDHHmm
 Func PackUtc($month, $day, $hour = 0, $minute = 0)
 	Return $month * 1000000 + $day * 10000 + $hour * 100 + $minute
+EndFunc
+
+
+Func IsFactionsEliteBonusWeek()
+	; Known start of a Factions Elite Bonus week (Mon 15:00 UTC)
+	Local $FACTIONS_ELITE_ANCHOR_UTC = '2026/07/13 15:00:00'
+	Return IsWithinRecurringWeek($FACTIONS_ELITE_ANCHOR_UTC)
+EndFunc
+
+Func IsPantheonBonusWeek()
+	; Known start of a Pantheon Bonus week (Mon 15:00 UTC)
+	Global Const $PANTHEON_ANCHOR_UTC = '2026/08/03 15:00:00'
+	Return IsWithinRecurringWeek($PANTHEON_ANCHOR_UTC)
+EndFunc
+
+
+Func IsHeroesAscentZaishenQuest()
+	; Known start of a Heroes Ascent Zaishen Quest occurrence (16:00 UTC), changes daily but repeats every 6 days
+	Local $ZAISHEN_QUEST_ANCHOR_UTC = '2026/07/24 16:00:00'
+
+	Local $SECONDS_PER_DAY = 24 * 60 * 60
+	; 6 day rotation for zaishen combat quests
+	Local $ROTATION_PERIOD_SECONDS = 6 * $SECONDS_PER_DAY
+
+	Return IsWithinRecurringPeriod($ZAISHEN_QUEST_ANCHOR_UTC, $ROTATION_PERIOD_SECONDS, $SECONDS_PER_DAY)
+EndFunc
+
+;~ True if now falls within the 1-week slot starting at $anchorStartUTC, recurring every 9 weeks.
+;~ $anchorStartUTC must be formatted 'YYYY/MM/DD HH:MM:SS' and can be any past OR future occurrence of the event start.
+Func IsWithinRecurringWeek($anchorStartUTC)
+	Global $SECONDS_PER_WEEK = 7 * 24 * 60 * 60
+	; 9 bonus weeks in rotation
+	Global $ROTATION_PERIOD_SECONDS = 9 * $SECONDS_PER_WEEK
+
+	Return IsWithinRecurringPeriod($anchorStartUTC, $ROTATION_PERIOD_SECONDS, $SECONDS_PER_WEEK)
+EndFunc
+
+
+; FIXME: use server time instead of local UTC time
+;~ True if now falls within a $durationSeconds-long slot starting at $anchorStartUTC, recurring every $periodSeconds.
+Func IsWithinRecurringPeriod($anchorStartUTC, $periodSeconds, $durationSeconds)
+	Local $elapsed = _DateDiff('s', $anchorStartUTC, _NowUtcString())
+
+	Local $leftover = Mod($elapsed, $periodSeconds)
+	; Mod() keeps sign of dividend, correct it
+	If $leftover < 0 Then $leftover += $periodSeconds
+
+	Return $leftover < $durationSeconds
+EndFunc
+
+
+;~ Current UTC time as 'YYYY/MM/DD HH:MM:SS', for use with _DateDiff()
+Func _NowUtcString()
+	Local $utc = _Date_Time_GetSystemTime()
+	Return StringFormat('%04d/%02d/%02d %02d:%02d:%02d', _
+			DllStructGetData($utc, 'Year'), DllStructGetData($utc, 'Month'), DllStructGetData($utc, 'Day'), _
+			DllStructGetData($utc, 'Hour'), DllStructGetData($utc, 'Minute'), DllStructGetData($utc, 'Second'))
+EndFunc
+
+
+;~ Return closest region corresponding to the local system time zone, based on UTC offset
+Func GetDistrictFromUTCOffset()
+	Local $RegionUS = 0, $RegionEU = 1, $RegionAsia = 2
+	Local $utcOffset = GetUTCOffset()
+	Switch True
+		Case $utcOffset < 0
+			Return 'Random US'
+		Case $utcOffset <= 240 ; UTC+4:00 (UAE)
+			Return 'Random EU'
+		Case Else
+			Return 'Random Asia'
+	EndSwitch
+EndFunc
+
+
+;~ Returns the UTC offset in minutes for the local system time zone, taking into account DST if applicable
+Func GetUTCOffset()
+	Local $timezoneInformation = _Date_Time_GetTimeZoneInformation()
+	Local $bias = $timezoneInformation[1]
+	Switch $timezoneInformation[0]
+		Case 1 ; Standard time
+			$bias += $timezoneInformation[4]
+		Case 2 ; Daylight saving time
+			$bias += $timezoneInformation[7]
+		; Case 0 ; Unknown time zone
+			; Do nothing, bias is already set to the default value
+	EndSwitch
+	Local $utcOffset = -$bias
+	Return $utcOffset
+EndFunc
+
+
+;~ Return GeoID of system to determine country - cannot be used to determiner server location as it is based on system locale
+Func GetSystemGeoID()
+	Return RegRead('HKEY_CURRENT_USER\Control Panel\International\Geo', 'Nation')
 EndFunc
 #EndRegion DateTime
 
@@ -1608,42 +1752,45 @@ EndFunc
 
 ;~ Manage excess faction points by either donating them, buying materials or elite zone scrolls
 Func ManageFactionPointsFarm($factionName, $getFactionFunction, $getMaxFactionFunction, $mapForFactionExchange, $npcX, $npcY)
-	If $getFactionFunction() > ($getMaxFactionFunction() - 25000) Then
-		TravelToOutpost($mapForFactionExchange, $district_name)
-		RandomSleep(200)
-		GoNearestNPCToCoords($npcX, $npcY)
-		If $run_options_cache['run.donate_faction_points'] Then
-			Info('Donating ' & $factionName & ' faction points')
-			While $getFactionFunction() >= 5000
-				DonateFaction($factionName)
-				RandomSleep(500)
-			WEnd
-		ElseIf $run_options_cache['run.buy_faction_resources'] Then
-			Info('Converting ' & $factionName & ' faction points into materials')
-			Dialog(0x83)
-			RandomSleep(550)
-			Local $numberOfChunks = Floor($getFactionFunction() / 5000)
-			; number of chunks = bits from 9th position (binary, not hex), e.g. 0x800101 = 1 chunk, 0x800201 = 2 chunks
-			Local $dialogID = 0x800001 + (0x100 * $numberOfChunks)
-			Dialog($dialogID)
-			RandomSleep(550)
-		ElseIf $run_options_cache['run.buy_faction_scrolls'] Then
-			Info('Converting ' & $factionName & ' faction points into Passage Scrolls')
-			Dialog(0x83)
-			RandomSleep(550)
-			Local $numberOfScrolls = Floor($getFactionFunction() / 1000)
-			; number of scrolls = bits from 9th position (binary, not hex), e.g. 0x800102 = 1 scroll, 0x800202 = 2 scrolls, 0x800A02 = 10 scrolls
-			Local $dialogID = 0x800002 + (0x100 * $numberOfScrolls)
-			Dialog($dialogID)
-			RandomSleep(550)
-		EndIf
+	Local $maxFactionPoints = $getMaxFactionFunction()
+	Local $currentFactionPoints = $getFactionFunction()
+	If $currentFactionPoints < 5000 Or $currentFactionPoints < ($maxFactionPoints - 25000) Then Return False
+
+	TravelToOutpost($mapForFactionExchange, $district_name)
+	RandomSleep(200)
+	GoNearestNPCToCoords($npcX, $npcY)
+	If $run_options_cache['run.donate_faction_points'] Then
+		Info('Donating ' & $factionName & ' faction points')
+		While $getFactionFunction() >= 5000
+			DonateFaction($factionName)
+			RandomSleep(500)
+		WEnd
+	ElseIf $run_options_cache['run.buy_faction_resources'] Then
+		Info('Converting ' & $factionName & ' faction points into materials')
+		Dialog(0x83)
+		RandomSleep(550)
+		Local $numberOfChunks = Floor($getFactionFunction() / 5000)
+		; number of chunks = bits from 9th position (binary, not hex), e.g. 0x800101 = 1 chunk, 0x800201 = 2 chunks
+		Local $dialogID = 0x800001 + (0x100 * $numberOfChunks)
+		Dialog($dialogID)
+		RandomSleep(550)
+	ElseIf $run_options_cache['run.buy_faction_scrolls'] Then
+		Info('Converting ' & $factionName & ' faction points into Passage Scrolls')
+		Dialog(0x83)
+		RandomSleep(550)
+		Local $numberOfScrolls = Floor($getFactionFunction() / 1000)
+		; number of scrolls = bits from 9th position (binary, not hex), e.g. 0x800102 = 1 scroll, 0x800202 = 2 scrolls, 0x800A02 = 10 scrolls
+		Local $dialogID = 0x800002 + (0x100 * $numberOfScrolls)
+		Dialog($dialogID)
+		RandomSleep(550)
 	EndIf
+	Return True
 EndFunc
 #EndRegion Faction
 
 
 #Region GW Utils
-;~ Disable all skills on a hero's skill bar.
+;~ Disable all skills on the skillbar of a hero.
 Func DisableAllHeroSkills($heroIndex)
 	For $i = 1 to 8
 		DisableHeroSkillSlot($heroIndex, $i)
@@ -1652,13 +1799,13 @@ Func DisableAllHeroSkills($heroIndex)
 EndFunc
 
 
-;~ Disable a skill on a hero's skill bar.
+;~ Disable a skill on the skillbar of a hero.
 Func DisableHeroSkillSlot($heroIndex, $skillSlot)
 	If Not GetIsHeroSkillSlotDisabled($heroIndex, $skillSlot) Then ToggleHeroSkillSlot($heroIndex, $skillSlot)
 EndFunc
 
 
-;~ Enable a skill on a hero's skill bar.
+;~ Enable a skill on the skillbar of a hero.
 Func EnableHeroSkillSlot($heroIndex, $skillSlot)
 	If GetIsHeroSkillSlotDisabled($heroIndex, $skillSlot) Then ToggleHeroSkillSlot($heroIndex, $skillSlot)
 EndFunc
@@ -1667,7 +1814,7 @@ EndFunc
 ;~ Try to add any available hero of the given profession to the party.
 ;~ If $preferredHeroID is specified, tries that hero first before falling back to others.
 ;~ Iterates all known heroes of that profession and attempts AddHero until one succeeds.
-;~ Returns the hero's party index (1-based) on success, or 0 if no hero of that profession could be added.
+;~ Returns the party index of the hero (1-based) on success, or 0 if no hero of that profession could be added.
 Func AddHeroByProfession($professionID, $preferredHeroID = 0)
 	If $preferredHeroID > 0 Then
 		Local $previousCount = GetHeroCount()
@@ -1689,7 +1836,7 @@ EndFunc
 
 
 ;~ Try to add a specific hero to the party. No fallback to other heroes.
-;~ Returns the hero's party index (1-based) on success, or 0 if the hero could not be added.
+;~ Returns the party index of a hero (1-based) on success, or 0 if the hero could not be added.
 Func AddRequiredHero($heroID)
 	Local $previousCount = GetHeroCount()
 	AddHero($heroID)
@@ -2768,7 +2915,7 @@ EndFunc
 
 
 ;~ Checks if a point is within a polygon defined by an array
-;~ Point-in-Polygon algorithm — Ray Casting Method - pretty cool stuff !
+;~ Point-in-Polygon algorithm - Ray Casting Method - pretty cool stuff !
 Func GetIsPointInPolygon($areaCoordinates, $X = 0, $Y = 0)
 	Local $edges = UBound($areaCoordinates)
 	Local $oddNodes = False
@@ -2800,11 +2947,11 @@ EndFunc
 
 
 ;~ Sleep a random amount of time.
-Func RandomSleep($baseAmount, $randomFactor = Null)
+Func RandomSleep($baseAmount, $sleepVariance = Null)
 	Local $randomAmount
 	Select
-		Case $randomFactor <> Null
-			$randomAmount = $baseAmount * $randomFactor
+		Case $sleepVariance <> Null
+			$randomAmount = $baseAmount * $sleepVariance
 		Case $baseAmount >= 15000
 			$randomAmount = $baseAmount * 0.025
 		Case $baseAmount >= 6000

@@ -86,10 +86,10 @@ Global Const $MAX_GEMSTONE_STYGIAN_FARM_DURATION = 16 * 60 * 1000
 Global Const $STYGIANS_RANGE_SHORT = 800
 Global Const $STYGIANS_RANGE_LONG = 1300
 
-Global $stygian_run_options						= CloneMap($default_move_defend_options)
-$stygian_run_options['defendFunction']			= StygianCheckRunBuffs
-$stygian_run_options['moveTimeOut']				= 3 * 60 * 1000
-$stygian_run_options['randomFactor']			= 20
+Global $stygian_run_options						= CloneMap($default_move_options)
+$stygian_run_options['movementRoutine']			= StygianCheckRunBuffs
+$stygian_run_options['moveTimeout']				= 3 * 60 * 1000
+$stygian_run_options['moveVariance']			= 20
 
 Global $stygian_player_profession = $ID_MESMER
 Global $gemstone_stygian_farm_setup = False
@@ -128,16 +128,14 @@ EndFunc
 
 Func SetupPlayerStygianFarm()
 	Info('Setting up player build skill bar')
-	Switch DllStructGetData(GetMyAgent(), 'Primary')
+	$stygian_player_profession = DllStructGetData(GetMyAgent(), 'Primary')
+	Switch $stygian_player_profession
 		Case $ID_ASSASSIN
-			$stygian_player_profession = $ID_ASSASSIN
-			LoadSkillTemplate($AME_STYGIAN_SKILLBAR)
+			LoadSkillTemplateIfNeeded($AME_STYGIAN_SKILLBAR)
 		Case $ID_MESMER
-			$stygian_player_profession = $ID_MESMER
-			LoadSkillTemplate($MEA_STYGIAN_SKILLBAR)
+			LoadSkillTemplateIfNeeded($MEA_STYGIAN_SKILLBAR)
 		Case $ID_RANGER
-			$stygian_player_profession = $ID_RANGER
-			LoadSkillTemplate($RN_STYGIAN_SKILLBAR)
+			LoadSkillTemplateIfNeeded($RN_STYGIAN_SKILLBAR)
 		Case Else
 			Warn('You need to run this farm bot as Assassin or Mesmer or Ranger')
 			Return $FAIL
@@ -152,11 +150,10 @@ Func SetupTeamStygianFarm()
 
 	Info('Setting up team')
 	LeaveParty()
-	If DllStructGetData(GetMyAgent(), 'Primary') == $ID_RANGER Then
+	If $stygian_player_profession == $ID_RANGER Then
 		If AddHeroByProfession($ID_RANGER, $STYGIAN_HERO_PARTY_ID) == $FAIL Then Return $FAIL
 		RandomSleep(500)
-		LoadSkillTemplate($STYGIAN_RANGER_HERO_SKILLBAR, 1)
-		RandomSleep(500)
+		LoadSkillTemplateIfNeeded($STYGIAN_RANGER_HERO_SKILLBAR, 1)
 		SetHeroBehaviour(1, $ID_HERO_AVOIDING)
 		RandomSleep(500)
 		DisableAllHeroSkills(1)
@@ -273,7 +270,7 @@ Func StygianJobMesmerAssassin($waveNumber = 1)
 	EndIf
 	MoveTo(13128, -10084)
 	; 0 to get player into the exact location without randomness, spot for cleaning stygian mobs
-	MoveTo(13082, -9788, 0, 0)
+	MoveTo(13082, -9788, 0)
 	RandomSleep(500)
 	If IsRecharged($STYGIAN_DWARVEN_STABILITY) Then
 		UseSkillEx($STYGIAN_DWARVEN_STABILITY)
@@ -303,7 +300,7 @@ Func StygianJobRanger()
 	MoveTo(10844, -10205)
 	MoveTo(10313, -11156)
 	MoveTo(8269, -11160)
-	MoveTo(8177, -11171, 0, 0)
+	MoveTo(8177, -11171, 0)
 
 	UseHeroSkill(1, $STYGIAN_HERO_EDGE_OF_EXTINCTION)
 	UseSkillEx($STYGIAN_RANGER_WINNOWING)
@@ -398,7 +395,7 @@ Func GoToHidingSpot()
 	If IsPlayerDead() Then Return $FAIL
 	RunStygianFarm(10575, -8170)
 	; 0 to get player into the exact location without randomness, spot to hide from running mobs
-	MoveTo(10871, -7842, 0, 0)
+	MoveTo(10871, -7842, 0)
 	; waiting for mobs to run by
 	RandomSleep(7500)
 	If $stygian_player_profession == $ID_RANGER Then

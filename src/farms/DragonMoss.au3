@@ -94,8 +94,7 @@ EndFunc
 Func SetupPlayerDragonMossFarm()
 	Info('Setting up player build skill bar')
 	If DllStructGetData(GetMyAgent(), 'Primary') == $ID_RANGER Then
-		LoadSkillTemplate($RA_DRAGON_MOSS_FARMER_SKILLBAR)
-		RandomSleep(250)
+		LoadSkillTemplateIfNeeded($RA_DRAGON_MOSS_FARMER_SKILLBAR)
 	Else
 		Warn('Should run this farm as ranger')
 		Return $FAIL
@@ -110,8 +109,7 @@ Func SetupTeamDragonMossFarm()
 	LeaveParty()
 	If AddHeroByProfession($ID_RANGER, $ID_PYRE_FIERCESHOT) == $SUCCESS Then
 		RandomSleep(150)
-		LoadSkillTemplate($DM_RANGER_HERO_SKILLBAR, 1)
-		RandomSleep(150)
+		LoadSkillTemplateIfNeeded($DM_RANGER_HERO_SKILLBAR, 1)
 		DisableAllHeroSkills(1)
 		SetHeroBehaviour(1, $ID_HERO_AVOIDING)
 		RandomSleep(150)
@@ -175,18 +173,18 @@ Func DragonMossFarmLoop()
 	RandomSleep(50)
 
 	; Aggro and cast hero spirits
-	MoveTo(-5300, 15600, 0, 0, UseIMSWhenAvailable)
+	MoveTo(-5300, 15600, 0, UseIMSWhenAvailable)
 	If $DM_RANGER_HERO > 0 Then
 		UseHeroSkill($DM_RANGER_HERO, $DM_RANGER_HERO_WINNOWING)
 	EndIf
-	MoveTo(-6150, 18000, 0, 0, UseIMSWhenAvailable)
+	MoveTo(-6150, 18000, 0, UseIMSWhenAvailable)
 	If $DM_RANGER_HERO > 0 Then
 		UseHeroSkill($DM_RANGER_HERO, $DM_RANGER_HERO_EDGE_OF_EXTINCTION)
 	EndIf
 	RandomSleep(2000)
 
 	; Move to safety and send hero away to avoid stealing loots
-	MoveTo(-6575, 18575, 0, 0)
+	MoveTo(-6575, 18575, 0)
 	UseSkillEx($DM_DWARVEN_STABILITY)
 	If $DM_RANGER_HERO > 0 Then
 		UseHeroSkill($DM_RANGER_HERO,$DM_RANGER_HERO_INCOMING)

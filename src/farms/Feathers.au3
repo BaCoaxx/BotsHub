@@ -95,8 +95,7 @@ EndFunc
 Func SetupPlayerFeathersFarm()
 	Info('Setting up player build skill bar')
 	If DllStructGetData(GetMyAgent(), 'Primary') == $ID_DERVISH Then
-		LoadSkillTemplate($DA_FEATHERS_FARMER_SKILLBAR)
-		RandomSleep(250)
+		LoadSkillTemplateIfNeeded($DA_FEATHERS_FARMER_SKILLBAR)
 	Else
 		Error('Should run this farm as dervish')
 		Return $FAIL
@@ -123,10 +122,10 @@ Func FeathersFarmLoop()
 	If GetMapID() <> $ID_JAYA_BLUFFS Then Return $FAIL
 
 	Info('Running to Sensali.')
-	MoveTo(9000, -12400, 0, 0, FeathersRun)
-	MoveTo(7950, -10800, 0, 0, FeathersRun)
-	MoveTo(3300, -8950, 0, 0, FeathersRun)
-	MoveTo(1550, -6650, 0, 0, FeathersRun)
+	MoveTo(9000, -12400, 0, FeathersRun)
+	MoveTo(7950, -10800, 0, FeathersRun)
+	MoveTo(3300, -8950, 0, FeathersRun)
+	MoveTo(1550, -6650, 0, FeathersRun)
 	;ToggleMapping(4)
 
 	; 15 groups to kill

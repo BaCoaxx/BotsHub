@@ -38,12 +38,12 @@ Global Const $ID_CAMPAIGN_BONUSPACK = 5
 
 
 #Region Map Continent
-Global Const $ID_Continent_Kryta = 0
-Global Const $ID_Continent_DevContinent = 1
-Global Const $ID_Continent_Cantha = 2
-Global Const $ID_Continent_BattleIsles = 3
-Global Const $ID_Continent_Elona = 4
-Global Const $ID_Continent_RealmOfTorment = 5
+Global Const $ID_CONTINENT_KRYTA = 0
+Global Const $ID_CONTINENT_DEVCONTINENT = 1
+Global Const $ID_CONTINENT_CANTHA = 2
+Global Const $ID_CONTINENT_BATTLEISLES = 3
+Global Const $ID_CONTINENT_ELONA = 4
+Global Const $ID_CONTINENT_REALMOFTORMENT = 5
 #EndRegion Map Continent
 
 #Region Region Type
@@ -497,7 +497,7 @@ Global Const $ID_ARKJOK_WARD = 380
 Global Const $ID_YOHLON_HAVEN = 381
 Global Const $ID_GANDARA_THE_MOON_FORTRESS = 382
 Global Const $ID_VORTEX = 383
-Global Const $ID_THE_FLOODPLAIN_OF_MAHKELEN = 384
+Global Const $ID_THE_FLOODPLAIN_OF_MAHNKELON = 384
 Global Const $ID_LIONS_ARCH_DURING_SUNSPEARS_IN_KRYTA = 385
 Global Const $ID_TURAIS_PROCESSION = 386
 Global Const $ID_SUNSPEAR_SANCTUARY = 387
@@ -1002,25 +1002,25 @@ Global Const $ID_TUNNELS_OF_THE_FORSAKEN_LVL_3 = 882
 
 #Region Varying Map Location IDs
 ; Locations varying seasonally, these are being set automatically according to decorated state during festivals or undecorated not during festivals
-; Canthan New Year:																	Kamadan,	Lion's Arch,	Shing Jea
+; Canthan New Year:																	Kamadan,	Lions Arch,		Shing Jea
 ; Anniversary Celebration:												Kaineng,								Shing Jea
 ; Dragon Festival:														Kaineng,								Shing Jea
-; Halloween:							Droknar,									Kamadan,	Lion's Arch,				Tombs of the Primeval Kings
-; Wintersday: 				Ascalon,	Droknar,	Eye Of The North,				Kamadan,	Lion's Arch
+; Halloween:							Droknar,									Kamadan,	Lions Arch,					Tombs of the Primeval Kings
+; Wintersday:				Ascalon,	Droknar,	Eye Of The North,				Kamadan,	Lions Arch
 Global Const $ID_ASCALON_CITY =					IsWintersdayFestival() ?		$ID_ASCALON_CITY_WINTERSDAY					:	$ID_ASCALON_CITY_DEFAULT
-Global Const $ID_DROKNARS_FORGE =				IsWintersdayFestival() ?		$ID_DROKNARS_FORGE_WINTERSDAY				: 	_
+Global Const $ID_DROKNARS_FORGE =				IsWintersdayFestival() ?		$ID_DROKNARS_FORGE_WINTERSDAY				:	_
 												IsHalloweenFestival() ?			$ID_DROKNARS_FORGE_HALLOWEEN				:	$ID_DROKNARS_FORGE_DEFAULT
 Global Const $ID_EYE_OF_THE_NORTH =				IsWintersdayFestival() ?		$ID_EYE_OF_THE_NORTH_WINTERSDAY				:	$ID_EYE_OF_THE_NORTH_DEFAULT
-Global Const $ID_KAMADAN_JEWEL_OF_ISTAN =		IsWintersdayFestival() ?		$ID_KAMADAN_JEWEL_OF_ISTAN_WINTERSDAY		: _
-												IsHalloweenFestival() ? 		$ID_KAMADAN_JEWEL_OF_ISTAN_HALLOWEEN		: _
-												IsCanthanNewYearFestival() ?	$ID_KAMADAN_JEWEL_OF_ISTAN_CANTHAN_NEW_YEAR : $ID_KAMADAN_JEWEL_OF_ISTAN_DEFAULT
-Global Const $ID_LIONS_ARCH =					IsWintersdayFestival() ?		$ID_LIONS_ARCH_WINTERSDAY					: _
-												IsHalloweenFestival() ?			$ID_LIONS_ARCH_HALLOWEEN					: _
-												IsCanthanNewYearFestival() ?	$ID_LIONS_ARCH_CANTHAN_NEW_YEAR				: $ID_LIONS_ARCH_DEFAULT
-Global Const $ID_TOMB_OF_THE_PRIMEVAL_KINGS =	IsHalloweenFestival() ?			$ID_TOMB_OF_THE_PRIMEVAL_KINGS_HALLOWEEN	: $ID_TOMB_OF_THE_PRIMEVAL_KINGS_DEFAULT
+Global Const $ID_KAMADAN_JEWEL_OF_ISTAN =		IsWintersdayFestival() ?		$ID_KAMADAN_JEWEL_OF_ISTAN_WINTERSDAY		:	_
+												IsHalloweenFestival() ?			$ID_KAMADAN_JEWEL_OF_ISTAN_HALLOWEEN		:	_
+												IsCanthanNewYearFestival() ?	$ID_KAMADAN_JEWEL_OF_ISTAN_CANTHAN_NEW_YEAR :	$ID_KAMADAN_JEWEL_OF_ISTAN_DEFAULT
+Global Const $ID_LIONS_ARCH =					IsWintersdayFestival() ?		$ID_LIONS_ARCH_WINTERSDAY					:	_
+												IsHalloweenFestival() ?			$ID_LIONS_ARCH_HALLOWEEN					:	_
+												IsCanthanNewYearFestival() ?	$ID_LIONS_ARCH_CANTHAN_NEW_YEAR				:	$ID_LIONS_ARCH_DEFAULT
+Global Const $ID_TOMB_OF_THE_PRIMEVAL_KINGS =	IsHalloweenFestival() ?			$ID_TOMB_OF_THE_PRIMEVAL_KINGS_HALLOWEEN	:	$ID_TOMB_OF_THE_PRIMEVAL_KINGS_DEFAULT
 Global Const $ID_KAINENG_CENTER =				IsAnniversaryCelebration() Or IsDragonFestival() ?	$ID_KAINENG_CENTER_ANNIVERSARY_AND_DRAGON_FESTIVAL	:	$ID_KAINENG_CENTER_DEFAULT
-Global Const $ID_SHING_JEA_MONASTERY =			IsCanthanNewYearFestival() ?	$ID_SHING_JEA_MONASTERY_CANTHAN_NEW_YEAR	: _
-												IsAnniversaryCelebration() Or IsDragonFestival() ? $ID_SHING_JEA_MONASTERY_DRAGON_FESTIVAL		: $ID_SHING_JEA_MONASTERY_DEFAULT
+Global Const $ID_SHING_JEA_MONASTERY =			IsCanthanNewYearFestival() ?	$ID_SHING_JEA_MONASTERY_CANTHAN_NEW_YEAR	:	_
+												IsAnniversaryCelebration() Or IsDragonFestival() ? $ID_SHING_JEA_MONASTERY_DRAGON_FESTIVAL		:	$ID_SHING_JEA_MONASTERY_DEFAULT
 #EndRegion Varying Map Location IDs
 
 
@@ -1410,7 +1410,7 @@ Global Const $MAP_IDS[] = [ _
 	$ID_YOHLON_HAVEN, _
 	$ID_GANDARA_THE_MOON_FORTRESS, _
 	$ID_VORTEX, _
-	$ID_THE_FLOODPLAIN_OF_MAHKELEN, _
+	$ID_THE_FLOODPLAIN_OF_MAHNKELON, _
 	$ID_LIONS_ARCH_DURING_SUNSPEARS_IN_KRYTA, _
 	$ID_TURAIS_PROCESSION, _
 	$ID_SUNSPEAR_SANCTUARY, _

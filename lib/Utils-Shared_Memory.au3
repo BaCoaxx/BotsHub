@@ -196,8 +196,8 @@ EndFunc
 Func CloseSharedMemory($memoryName)
 	SafeDllCall5($kernel_handle, 'bool', 'UnmapViewOfFile', 'ptr', DllStructGetPtr($sharedMemoryStructuresMap[$memoryName]))
 	SafeDllCall5($kernel_handle, 'bool', 'CloseHandle', 'handle', $sharedMemoryHandlesMap[$memoryName])
-    $sharedMemoryStructuresMap[$memoryName] = Null
-    $sharedMemoryHandlesMap[$memoryName] = Null
+	$sharedMemoryStructuresMap[$memoryName] = Null
+	$sharedMemoryHandlesMap[$memoryName] = Null
 EndFunc
 
 
@@ -264,19 +264,18 @@ EndFunc
 ;~ ----------------------------------------------------------------------------------------
 Func WriteHeroesEffectsToSharedMemory(ByRef $effectsMap)
 	Local $pointer = GetSharedMemoryPointer($SLAVE_BROADCAST & $peerIndex, 'data')
-	Info('Getting ptr to ' & $pointer)
-
 	Local $offset = 0
 	; reserve payload size
 	$offset += 4
 
 	Local $keys = MapKeys($effectsMap)
 	$offset = BinaryWriterWriteUInt($pointer, $offset, UBound($keys))
-	Info('Agent count ' & UBound($keys))
+	Debug('Agent count ' & UBound($keys))
 
 	For $agentID In $keys
 		Local $effects = $effectsMap[$agentID]
-		Info('Effect count ' & UBound($effects))
+		If $effects == Null Then ContinueLoop
+		Debug('Effect count ' & UBound($effects))
 
 		$offset = BinaryWriterWriteUInt($pointer, $offset, $agentID)
 		$offset = BinaryWriterWriteUInt($pointer, $offset, UBound($effects))
@@ -288,29 +287,28 @@ Func WriteHeroesEffectsToSharedMemory(ByRef $effectsMap)
 
 	; $offset now corresponds to the total size of what we have written
 	BinaryWriterWriteUInt($pointer, 0, $offset)
-	Info('Payload size ' & $offset)
+	Debug('Payload size ' & $offset)
 EndFunc
 
 Func ReadHeroesEffectsFromSharedMemory($memoryName)
 	Local $effectsMap[]
 
 	Local $pointer = GetSharedMemoryPointer($memoryName, 'data')
-	Info('Getting ptr to ' & $pointer)
 	Local $offset = 0
 	Local $payloadSize = BinaryReaderReadUInt($pointer, $offset)
-	Info('Payload size ' & $payloadSize)
+	Debug('Payload size ' & $payloadSize)
 	$offset += 4
 	If $payloadSize = 0 Then Return $effectsMap
 
 	Local $agentCount = BinaryReaderReadUInt($pointer, $offset)
-	Info('Agent count ' & $agentCount)
+	Debug('Agent count ' & $agentCount)
 	$offset += 4
 
 	For $i = 1 To $agentCount
 		Local $agentID = BinaryReaderReadUInt($pointer, $offset)
 		$offset += 4
 		Local $effectCount = BinaryReaderReadUInt($pointer, $offset)
-		Info('Effect count ' & $agentCount)
+		Debug('Effect count ' & $effectCount)
 		$offset += 4
 
 		Local $effects[$effectCount]
@@ -323,9 +321,9 @@ Func ReadHeroesEffectsFromSharedMemory($memoryName)
 	Next
 
 	If $offset > $payloadSize Then
-		Warn("Shared memory over-read")
+		Warn('Shared memory over-read')
 	ElseIf $offset < $payloadSize Then
-		Warn("Shared memory under-read")
+		Warn('Shared memory under-read')
 	EndIf
 
 	Return $effectsMap
@@ -333,7 +331,7 @@ EndFunc
 
 Func BinaryWriterWriteUInt($pointer, $offset, $value)
 	If $offset + 4 > $SLAVE_BROADCAST_DATA_SIZE Then
-		Error("Shared memory overflow")
+		Error('Shared memory overflow')
 		Return SetError(1, 0, $offset)
 	EndIf
 
@@ -345,7 +343,7 @@ EndFunc
 Func BinaryWriterWriteStruct($pointer, $offset, $struct)
 	Local $size = DllStructGetSize($struct)
 	If $offset + $size > $SLAVE_BROADCAST_DATA_SIZE Then
-		Error("Shared memory overflow")
+		Error('Shared memory overflow')
 		Return SetError(1, 0, $offset)
 	EndIf
 

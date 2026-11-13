@@ -44,7 +44,7 @@ Global Const $KOURNANS_FARM_INFORMATIONS = 'For best results, have :' & @CRLF _
 ; Average duration ~ 2m10s ~ First run is 2m40s with setup
 Global Const $KOURNANS_FARM_DURATION = (2 * 60 + 25) * 1000
 
-; Skill numbers declared to make the code WAY more readable (UseSkillEx($RAPTORS_MARK_OF_PAIN) is better than UseSkillEx(1))
+; Skill numbers declared to make the code WAY more readable (UseSkillEx($KOURNANS_INTENSITY) is better than UseSkillEx(1))
 Global Const $KOURNANS_INTENSITY						= 1
 Global Const $KOURNANS_EBON_BATTLE_STANDARD_OF_HONOR	= 2
 Global Const $KOURNANS_MINDBENDER						= 3
@@ -117,8 +117,7 @@ EndFunc
 Func SetupPlayerKournansFarm()
 	Info('Setting up player build skill bar')
 	If DllStructGetData(GetMyAgent(), 'Primary') == $ID_ELEMENTALIST Then
-		LoadSkillTemplate($ELA_KOURNANS_FARMER_SKILLBAR)
-		RandomSleep(250)
+		LoadSkillTemplateIfNeeded($ELA_KOURNANS_FARMER_SKILLBAR)
 	Else
 		Warn('Should run this farm as elementalist')
 		Return $FAIL
@@ -140,10 +139,9 @@ Func SetupTeamKournansFarm()
 		Warn('Could not set up party correctly. Team size different than 4')
 		Return $FAIL
 	EndIf
-	LoadSkillTemplate($R_KOURNANS_HERO_SKILLBAR, $KOURNANS_RANGER_HERO_POSITION)
-	LoadSkillTemplate($RT_KOURNANS_HERO_SKILLBAR, $KOURNANS_RITUALIST_HERO_POSITION)
-	LoadSkillTemplate($P_KOURNANS_HERO_SKILLBAR, $KOURNANS_PARAGON_HERO_POSITION)
-	RandomSleep(250)
+	LoadSkillTemplateIfNeeded($R_KOURNANS_HERO_SKILLBAR, $KOURNANS_RANGER_HERO_POSITION)
+	LoadSkillTemplateIfNeeded($RT_KOURNANS_HERO_SKILLBAR, $KOURNANS_RITUALIST_HERO_POSITION)
+	LoadSkillTemplateIfNeeded($P_KOURNANS_HERO_SKILLBAR, $KOURNANS_PARAGON_HERO_POSITION)
 	DisableAllHeroSkills(1)
 	DisableAllHeroSkills(2)
 	RandomSleep(250)
@@ -199,7 +197,7 @@ Func KournansFarmLoop()
 	UseSkillEx($KOURNANS_INTENSITY)
 	UseSkillEx($KOURNANS_MINDBENDER)
 	Local $positionToGo = FindMiddleOfFoes(9600, -650, $RANGE_EARSHOT)
-	$targetFoe = BetterGetNearestNPCToCoords($ID_ALLEGIANCE_FOE, $positionToGo[0], $positionToGo[1], $RANGE_SPELLCAST)
+	$targetFoe = GetNearestEnemyToCoords($positionToGo[0], $positionToGo[1])
 	GetAlmostInRangeOfAgent($targetFoe)
 	RandomSleep(50)
 	UseSkillEx($KOURNANS_EBON_BATTLE_STANDARD_OF_HONOR)

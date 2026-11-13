@@ -16,14 +16,12 @@
 #CE ===========================================================================
 
 #include-once
-#RequireAdmin
-#NoTrayIcon
 
 #include '../../lib/GWA2.au3'
 #include '../../lib/GWA2_ID.au3'
 #include '../../lib/Utils.au3'
 
-; Possible improvements :
+; Performance as of 26.08.15: 81 runs, 99% success, 25h22m
 
 Opt('MustDeclareVars', True)
 
@@ -32,8 +30,8 @@ Global Const $LUXON_MOUNT_QINKAI_INFORMATIONS = 'For best results, have :' & @CR
 	& '- a full hero team that can clear HM content easily' & @CRLF _
 	& '- a build that can be played from skill 1 to 8 easily (no combos or complicated builds)' & @CRLF _
 	& 'This bot does not load hero builds - please use your own teambuild'
-; Average duration ~ 20m
-Global Const $LUXONS_MOUNT_QINKAI_DURATION = 20 * 60 * 1000
+; Average duration ~ 19m
+Global Const $LUXONS_MOUNT_QINKAI_DURATION = 19 * 60 * 1000
 
 Global $luxon_mount_qinkai_setup = False
 
@@ -137,6 +135,7 @@ Func VanquishMountQinkai()
 	]
 
 	For $i = 0 To UBound($foes) - 1
+		If CheckStuck($foes[$i][2], 2 * $LUXONS_MOUNT_QINKAI_DURATION) == $FAIL Then Return $FAIL
 		If MoveAggroAndKillInRange($foes[$i][0], $foes[$i][1], $foes[$i][2], $foes[$i][3]) == $FAIL Then Return $FAIL
 	Next
 	If Not GetAreaVanquished() Then

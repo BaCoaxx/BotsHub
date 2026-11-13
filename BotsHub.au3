@@ -28,7 +28,7 @@
 #NoTrayIcon
 
 Opt('MustDeclareVars', True)
-;Opt("ExpandEnvStrings", 1)
+;Opt('ExpandEnvStrings', 1)
 
 #Region Includes
 #include-once
@@ -53,6 +53,7 @@ Opt('MustDeclareVars', True)
 #include 'src/farms/CoF.au3'
 #include 'src/farms/Corsairs.au3'
 #include 'src/farms/DragonMoss.au3'
+#include 'src/farms/DrakeFlesh.au3'
 #include 'src/farms/EdenIris.au3'
 #include 'src/farms/Feathers.au3'
 #include 'src/farms/FoWTowerOfCourage.au3'
@@ -61,14 +62,18 @@ Opt('MustDeclareVars', True)
 #include 'src/farms/GemstoneStygian.au3'
 #include 'src/farms/GemstoneTorment.au3'
 #include 'src/farms/JadeBrotherhood.au3'
+#include 'src/farms/Kappa.au3'
 #include 'src/farms/Lightbringer-Sunspear.au3'
 #include 'src/farms/Lightbringer.au3'
 #include 'src/farms/Mantids.au3'
 #include 'src/farms/Kournans.au3'
 #include 'src/farms/Minotaurs.au3'
 #include 'src/farms/Raptors.au3'
+#include 'src/farms/SkaleFins.au3'
+#include 'src/farms/Skrees.au3'
 #include 'src/farms/SpiritSlaves.au3'
 #include 'src/farms/Vaettirs.au3'
+#include 'src/farms/Zodiac.au3'
 #include 'src/missions/Deldrimor.au3'
 #include 'src/missions/FoW.au3'
 #include 'src/missions/Froggy.au3'
@@ -80,11 +85,11 @@ Opt('MustDeclareVars', True)
 #include 'src/missions/SunspearArmor.au3'
 #include 'src/missions/TunnelsOfTheForsaken.au3'
 #include 'src/missions/Underworld.au3'
+#include 'src/missions/UnderworldPantheon.au3'
 #include 'src/missions/Voltaic.au3'
 #include 'src/missions/WarSupplyKeiran.au3'
 #include 'src/runs/Boreal.au3'
 #include 'src/runs/Pongmei.au3'
-#include 'src/runs/RollerbeetleRacing.au3'
 #include 'src/runs/Tasca.au3'
 #include 'src/titles/LDOA.au3'
 #include 'src/utilities/Follower.au3'
@@ -108,8 +113,7 @@ Global Const $SUCCESS = 0
 Global Const $FAIL = 1
 Global Const $PAUSE = 2
 
-
-Global Const $AVAILABLE_DISTRICTS = '|Random|Random EU|Random US|Random Asia|America|China|English|French|German|International|Italian|Japan|Korea|Polish|Russian|Spanish'
+Global Const $AVAILABLE_DISTRICTS = '|Default|Random|Random EU|Random US|Random Asia|America|China|English|French|German|International|Italian|Japan|Korea|Polish|Russian|Spanish'
 
 Global Const $AVAILABLE_HEROES = '||Acolyte Jin|Acolyte Sousuke|Anton|Devona|Dunkoro|General Morgahn|Ghost of Althea|Goren|Gwen|Hayda|Jora|Kahmu|Keiran Thackeray|Koss|Livia|' & _
 	'Margrid the Sly|Master of Whispers|Melonni|Miku|MOX|Norgu|Ogden|Olias|Pyre Fierceshot|Razah|Tahlkora|Vekk|Xandra|ZeiRi|Zenmai|Zhed Shadowhoof|' & _
@@ -137,7 +141,7 @@ Global $gui_enabled
 
 Global $inventory_management_cache[]
 Global $run_options_cache[]
-$run_options_cache['run.district'] = 'Random EU'
+$run_options_cache['run.district'] = 'Default'
 $run_options_cache['run.consume_consumables'] = True
 $run_options_cache['run.use_consets'] = False
 $run_options_cache['run.use_scrolls'] = False
@@ -152,7 +156,7 @@ $run_options_cache['run.go_offline'] = False
 $run_options_cache['run.flash_whisper'] = False
 $run_options_cache['team.automatic_team_setup'] = False
 ; Overrides on $run_options_cache for frequent usage
-Global $district_name = 'Random EU'
+Global $district_name = 'Default'
 Global $bags_count = 5
 #EndRegion Variables
 
@@ -188,7 +192,7 @@ Func BotsHubMain()
 		ApplyConfigToGUI()
 		FillConfigurationCombo()
 		GUISetState(@SW_SHOWNORMAL)
-		Info('GW Bot Hub ' & $GW_BOT_HUB_VERSION)
+		Info('GW Bot Hub ' & $GW_BOT_HUB_VERSION & ' - AutoIt ' & @AutoItVersion)
 		; Authentication
 		ScanAndUpdateGameClients()
 		RefreshCharactersComboBox()
@@ -222,7 +226,6 @@ Func BotsHubMain()
 		Authentification($character_name)
 		$runtime_status = 'RUNNING'
 
-
 		If $slave_index >= 0 Then
 			If OpenMasterSlaveSharedMemory($slave_index) Then
 				AdlibRegister('UpdateHeartbeat', 5000)
@@ -245,13 +248,13 @@ Func BotHubLoop()
 	While True
 		If ($runtime_status == 'RUNNING') Then
 			If $run_mode == 'GUI' Then
-				DisableGUIComboboxes()
 				If $farm_name == Null Or $farm_name == '' Then
 					Error('This farm does not exist.')
 					$runtime_status = 'INITIALIZED'
 					EnableStartButton()
 					Return $PAUSE
 				EndIf
+				DisableGUIComboboxes()
 			EndIf
 			Local $result = RunFarmLoop()
 			If ($result == $PAUSE Or $run_options_cache['run.loop_mode'] == False) Then $runtime_status = 'WILL_PAUSE'
@@ -293,7 +296,7 @@ Func RunFarmLoop()
 		If (CountSlots(1, $bags_count) < $inventorySpaceNeeded) Then
 			Notice('Inventory full, pausing.')
 			ResetBotsSetups()
-			$runtime_status = 'WILL_PAUSE'
+			Return $PAUSE
 		EndIf
 
 		; Global farm setup
@@ -322,7 +325,7 @@ Func RunFarmLoop()
 		AdlibUnRegister('UpdateProgressBar')
 		CompleteGUIFarmProgress()
 		Local $elapsedTime = TimerDiff($run_timer)
-		Info('Run ' & ($result == $SUCCESS ? 'successful' : 'failed') & ' after: ' & ConvertTimeToMinutesString($elapsedTime))
+		Info('Run ' & ($result == $FAIL ? 'failed' : 'successful') & ' after: ' & ConvertTimeToMinutesString($elapsedTime))
 		UpdateStats($result, $elapsedTime)
 	EndIf
 	ClearMemory(GetProcessHandle())
@@ -431,6 +434,7 @@ Func ReadConfigFromJson($jsonString)
 	; TODO/FIXME: simplify by iterating over JSON leaves
 	$run_options_cache['run.loop_mode'] = _JSON_Get($jsonObject, 'run.loop_mode')
 	$run_options_cache['run.hard_mode'] = _JSON_Get($jsonObject, 'run.hard_mode')
+	$run_options_cache['run.share_memory'] = _JSON_Get($jsonObject, 'run.share_memory')
 	$run_options_cache['run.farm_materials_mid_run'] = _JSON_Get($jsonObject, 'run.farm_materials_mid_run')
 	$run_options_cache['run.consume_consumables'] = _JSON_Get($jsonObject, 'run.consume_consumables')
 	$run_options_cache['run.use_consets'] = _JSON_Get($jsonObject, 'run.use_consets')
@@ -481,6 +485,7 @@ Func WriteConfigToJson()
 	_JSON_addChangeDelete($jsonObject, 'main.loot_configuration', $loot_configuration)
 	_JSON_addChangeDelete($jsonObject, 'run.loop_mode', $run_options_cache['run.loop_mode'])
 	_JSON_addChangeDelete($jsonObject, 'run.hard_mode', $run_options_cache['run.hard_mode'])
+	_JSON_addChangeDelete($jsonObject, 'run.share_memory', $run_options_cache['run.share_memory'])
 	_JSON_addChangeDelete($jsonObject, 'run.farm_materials_mid_run', $run_options_cache['run.farm_materials_mid_run'])
 	_JSON_addChangeDelete($jsonObject, 'run.consume_consumables', $run_options_cache['run.consume_consumables'])
 	_JSON_addChangeDelete($jsonObject, 'run.use_consets', $run_options_cache['run.use_consets'])
@@ -537,6 +542,7 @@ Func FillFarmMap()
 	AddFarmToFarmMap(	'CoF',							CoFFarm,						5,					$COF_FARM_DURATION)
 	AddFarmToFarmMap(	'Corsairs',						CorsairsFarm,					5,					$CORSAIRS_FARM_DURATION)
 	AddFarmToFarmMap(	'Deldrimor',					DeldrimorFarm,					10,					$DELDRIMOR_FARM_DURATION)
+	AddFarmToFarmMap(	'Drake Flesh',					DrakeFleshFarm,					5,					$DRAKE_FLESH_FARM_DURATION)
 	AddFarmToFarmMap(	'Dragon Moss',					DragonMossFarm,					5,					$DRAGONMOSS_FARM_DURATION)
 	AddFarmToFarmMap(	'Eden Iris',					EdenIrisFarm,					2,					$IRIS_FARM_DURATION)
 	AddFarmToFarmMap(	'Feathers',						FeathersFarm,					10,					$FEATHERS_FARM_DURATION)
@@ -550,6 +556,7 @@ Func FillFarmMap()
 	AddFarmToFarmMap(	'Gemstone Torment',				GemstoneTormentFarm,			10,					$GEMSTONE_TORMENT_FARM_DURATION)
 	AddFarmToFarmMap(	'Glint Challenge',				GlintChallengeFarm,				5,					$GLINT_CHALLENGE_DURATION)
 	AddFarmToFarmMap(	'Jade Brotherhood',				JadeBrotherhoodFarm,			5,					$JADEBROTHERHOOD_FARM_DURATION)
+	AddFarmToFarmMap(	'Kappa',						KappaFarm,						5,					$KAPPA_FARM_DURATION)
 	AddFarmToFarmMap(	'Kilroy',						KilroyFarm,						10,					$KILROY_FARM_DURATION)
 	AddFarmToFarmMap(	'Kournans',						KournansFarm,					5,					$KOURNANS_FARM_DURATION)
 	AddFarmToFarmMap(	'Kurzick Ferndale',				KurzickFerndaleFarm,			15,					$KURZICKS_FERNDALE_DURATION)
@@ -567,22 +574,26 @@ Func FillFarmMap()
 	AddFarmToFarmMap(	'OmniFarm',						OmniFarm,						5,					5 * 60 * 1000)
 	AddFarmToFarmMap(	'Pongmei',						PongmeiChestFarm,				5,					$PONGMEI_FARM_DURATION)
 	AddFarmToFarmMap(	'Raptors',						RaptorsFarm,					5,					$RAPTORS_FARM_DURATION)
-	AddFarmToFarmMap(	'Rollerbeetle Racing',			RollerBeetleFarm,				0,					$ROLLERBEETLE_FARM_DURATION)
+	AddFarmToFarmMap(	'Skale Fins',					SkaleFinsFarm,					5,					$SKALE_FINS_FARM_DURATION)
+	AddFarmToFarmMap(	'Skrees',						SkreesFarm,						10,					$SKREES_FARM_DURATION)
 	AddFarmToFarmMap(	'SoO',							SoOFarm,						15,					$SOO_FARM_DURATION)
 	AddFarmToFarmMap(	'SpiritSlaves',					SpiritSlavesFarm,				5,					$SPIRIT_SLAVES_FARM_DURATION)
 	AddFarmToFarmMap(	'Sunspear Armor',				SunspearArmorFarm,				5,					$SUNSPEAR_ARMOR_FARM_DURATION)
 	AddFarmToFarmMap(	'Tasca',						TascaChestFarm,					5,					$TASCA_FARM_DURATION)
 	AddFarmToFarmMap(	'TunnelsOfTheForsaken',			TunnelsOfTheForsakenFarm,		5,					$TUNNELS_OF_THE_FORSAKEN_FARM_DURATION)
-	AddFarmToFarmMap(	'Underworld',					UnderworldFarm,					5,					$UW_FARM_DURATION)
+	AddFarmToFarmMap(	'Underworld',					UnderworldFarm,					5,					$UW_DURATION)
+	AddFarmToFarmMap(	'UnderworldPantheon',			UnderworldFarmPantheon,		    5,					$UW_FARM_PANTHEON_DURATION)
 	AddFarmToFarmMap(	'Vaettirs',						VaettirsFarm,					5,					$VAETTIRS_FARM_DURATION)
 	AddFarmToFarmMap(	'Vanguard',						VanguardTitleFarm,				5,					$VANGUARD_TITLE_FARM_DURATION)
 	AddFarmToFarmMap(	'Voltaic',						VoltaicFarm,					10,					$VOLTAIC_FARM_DURATION)
 	AddFarmToFarmMap(	'War Supply Keiran',			WarSupplyKeiranFarm,			10,					$WAR_SUPPLY_FARM_DURATION)
+	AddFarmToFarmMap(	'Zodiac',						ZodiacFarm,						10,					$ZODIAC_FARM_DURATION)
 	AddFarmToFarmMap(	'Manual Mode',					ManualMode,						0,					2 * 60 * 1000)
 	AddFarmToFarmMap(	'Storage',						InventoryManagementBeforeRun,	5,					2 * 60 * 1000)
+	AddFarmToFarmMap(	'Tonic Spammer',				AutomaticTonicConsumer,			5,					30 * 60 * 1000)
 	AddFarmToFarmMap(	'Tests',						RunTests,						0,					2 * 60 * 1000)
 	AddFarmToFarmMap(	'TestSuite',					RunTestSuite,					0,					5 * 60 * 1000)
-	AddFarmToFarmMap(	'',								Null,							0,					2 * 60 * 1000)
+	AddFarmToFarmMap(	'',								RunTests,						0,					2 * 60 * 1000)
 EndFunc
 
 
@@ -590,23 +601,26 @@ EndFunc
 Func ResetBotsSetups()
 	$global_farm_setup						= False
 	$boreal_farm_setup						= False
+	$drake_flesh_farm_setup					= False
 	$dm_farm_setup							= False
 	$feathers_farm_setup					= False
 	$froggy_farm_setup						= False
 	$iris_farm_setup						= False
 	$jade_brotherhood_farm_setup			= False
+	$kappa_farm_setup						= False
 	$kournans_farm_setup					= False
 	$ldoa_farm_setup						= False
 	$lightbringer_farm_setup				= False
 	$mantids_farm_setup						= False
 	$pongmei_farm_setup						= False
 	$raptors_farm_setup						= False
-	$rollerbeetle_farm_setup				= False
+	$skrees_farm_setup						= False
 	$soo_farm_setup							= False
 	$spirit_slaves_farm_setup				= False
 	$tasca_farm_setup						= False
 	$tunnels_of_the_forsaken_farm_setup		= False
 	$vaettirs_farm_setup					= False
+	$zodiac_farm_setup						= False
 	; Those do not need to be reset - party did not change, build did not change, and there is no need to refresh portal
 	; BUT those bots MUST tp to the correct map on every loop
 	;$cof_farm_setup						= False
@@ -644,6 +658,11 @@ Func GeneralFarmSetup()
 		If $run_options_cache['run.go_offline'] Then SetPlayerStatus(0)
 		If $run_options_cache['run.flash_whisper'] Then EnableWhisperFlash()
 	EndIf
+	If $run_options_cache['run.share_memory'] And $peerIndex == -1 Then
+		Local $freePeerIndex = OpenPeersSharedMemoryBlocks()
+		Info('First free peer index: ' & $freePeerIndex)
+		If CreatePeerSharedMemoryBlock($freePeerIndex) Then AdlibRegister('ShareTeamEffects', $HR_INTERVAL)
+	EndIf
 
 	SetupPlayerBuildOverrides()
 
@@ -668,8 +687,7 @@ EndFunc
 Func SetupPlayerUsingGlobalSettings()
 	If $run_options_cache['team.load_player_build'] Then
 		Info('Loading player build from GUI')
-		LoadSkillTemplate($run_options_cache['team.player_build'])
-		RandomSleep(500)
+		LoadSkillTemplateIfNeeded($run_options_cache['team.player_build'])
 	EndIf
 EndFunc
 
@@ -704,7 +722,7 @@ Func SetupTeamUsingGlobalSettings($teamSize = $ID_TEAM_SIZE_LARGE)
 			If $run_options_cache['team.load_hero_' & $i & '_build'] Then
 				RandomSleep(500)
 				Info('Loading hero ' & $i & ' build from GUI')
-				LoadSkillTemplate($run_options_cache['team.hero_' & $i & '_build'], $i)
+				LoadSkillTemplateIfNeeded($run_options_cache['team.hero_' & $i & '_build'], $i)
 			EndIf
 		EndIf
 	Next
